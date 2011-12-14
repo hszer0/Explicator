@@ -1,1 +1,7 @@
-This file was created by PyCharm 2.0 for binding GitHub repository
+Explicator is a planning tool to keep track of all your projects based on priority and dependancy.
+It uses the basics of a network planning.
+
+The application is written in Python with PyCharm (http://www.jetbrains.com/pycharm/)
+Visualisation  of the graph is done with a modified version of XDot (http://code.google.com/p/jrfonseca/wiki/XDot)
+User interface is made in PyGTK (http://www.pygtk.org/)
+
