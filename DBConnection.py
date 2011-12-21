@@ -124,4 +124,7 @@ def get_task_data(tid):
 def toggle_action(id):
     c.execute("update action set completed = not completed where id = %(id)s" % {"id":id})
     conn.commit()
-    return
+
+def update_task(command, tid):
+    c.execute("update task set %(command)s where id = %(tid)s" % {"command":command, "tid":tid})
+    conn.commit()
