@@ -41,14 +41,24 @@ def get_dependencies(pid):
         dependencies += "P" + str(row[0]) + "T" + str(row[1]) + "; "
     return dependencies
 
-def get_actions(tid):
+def get_actionlist(tid):
     cur = conn.cursor()
     cur.execute("""
     select * from action where tid = %(tid)s
     """ % {"tid":tid})
-    actions = "Actions:\l"
+    return cur
+
+def get_actions(tid):
+    actions = ''
+    cur = conn.cursor()
+    cur.execute("""
+    select * from action where tid = %(tid)s
+    """ % {"tid":tid})
     for row in cur:
-        actions += "- " + str(row[1]) + "\l"
+        if row[3]:
+            actions += "\[v\] - " + str(row[1]) + "\l"
+        else:
+            actions += "\[_\] - " + str(row[1]) + "\l"
     return actions
 
 def generate_dotcode(projectlist=None):
@@ -110,3 +120,8 @@ def get_project_data(pid):
 def get_task_data(tid):
     c.execute("select * from task where id = %(tid)s" % {"tid":tid})
     return c.fetchone()
+
+def toggle_action(id):
+    c.execute("update action set completed = not completed where id = %(id)s" % {"id":id})
+    conn.commit()
+    return
