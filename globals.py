@@ -1,6 +1,5 @@
 import re
 
-
 statuslist = 'active', 'available', 'canceled', 'completed', 'on hold'
 colorlist = 'forestgreen', 'black', 'red', 'grey', 'blue'
 
