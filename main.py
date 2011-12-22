@@ -294,12 +294,7 @@ class MyDotWindow(xdot.DotWindow):
     def on_url_clicked(self, widget, url, event):
         self.pid = get_project_id(url)
         self.tid = get_task_id(url)
-        projectdata = DBConnection.get_project_data(self.pid)
-        self.ProjectNameEntry.set_text(projectdata[1])
-        for index, status in enumerate(statuslist):
-            if projectdata[2] == status:
-                self.ProjectStatusCombo.set_active(index)
-        self.ProjectPriorityEntry.set_text(str(projectdata[3]))
+        self.fill_project_properties()
         taskdata = DBConnection.get_task_data(self.tid)
         self.TaskNameEntry.set_text(taskdata[1])
         for index, status in enumerate(statuslist):
@@ -324,6 +319,17 @@ class MyDotWindow(xdot.DotWindow):
             projects.append(model.get_value(iter, 0))
         dotcode = DBConnection.generate_dotcode(projects)
         self.refresh_graph(dotcode)
+        if len(rownrs) == 1:
+            self.pid = projects[0]
+            self.fill_project_properties()
+
+    def fill_project_properties(self):
+        projectdata = DBConnection.get_project_data(self.pid)
+        self.ProjectNameEntry.set_text(projectdata[1])
+        for index, status in enumerate(statuslist):
+            if projectdata[2] == status:
+                self.ProjectStatusCombo.set_active(index)
+        self.ProjectPriorityEntry.set_text(str(projectdata[3]))
 
     def on_action_toggled(self, cell, path, model):
         DBConnection.toggle_action(model[path][0])
