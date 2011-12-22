@@ -4,7 +4,6 @@ from globals import *
 conn = sqlite3.connect("explicator.db")
 c = conn.cursor()
 
-
 def open_connection():
     c.execute("PRAGMA foreign_keys = ON;")
 

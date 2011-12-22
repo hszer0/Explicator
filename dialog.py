@@ -52,5 +52,4 @@ def show_project_dialog(pid=None):
     projectdialog.show_all()
     response = projectdialog.run()
 
-
 show_project_dialog()

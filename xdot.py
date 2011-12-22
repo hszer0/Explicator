@@ -1857,7 +1857,6 @@ class DotWindow(gtk.Window):
     def on_reload(self, action):
         self.widget.reload()
 
-
 def main():
     import optparse
 

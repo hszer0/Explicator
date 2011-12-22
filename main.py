@@ -369,7 +369,6 @@ class MyDotWindow(xdot.DotWindow):
     def clear_project_properties(self):
         self.ProjectNameEntry.set_text("")
 
-
 if __name__ == "__main__":
     window = MyDotWindow()
     window.connect('destroy', gtk.main_quit)
