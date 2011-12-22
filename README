@@ -4,4 +4,4 @@ It uses the basics of a network planning.
 The application is written in Python with PyCharm (http://www.jetbrains.com/pycharm/)
 Visualisation  of the graph is done with a modified version of XDot (http://code.google.com/p/jrfonseca/wiki/XDot)
 User interface is made in PyGTK (http://www.pygtk.org/)
-Uses sqlite.
+Uses sqlite3.
