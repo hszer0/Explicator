@@ -284,7 +284,6 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(hseparator, False)
         vbox.pack_start(hbox, False)
 
-
         self.set_focus(self.widget)
         self.refresh_tags()
         self.refresh_projects()
@@ -366,6 +365,9 @@ class MyDotWindow(xdot.DotWindow):
         if taskdata[3] != get_active_text(combobox):
             DBConnection.update_task("status = '%(status)s'" % {"status":get_active_text(combobox)},self.tid)
             self.refresh_view()
+
+    def clear_project_properties(self):
+        self.ProjectNameEntry.set_text("")
 
 
 if __name__ == "__main__":
