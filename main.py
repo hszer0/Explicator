@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import DBConnection
+import dialog
 from globals import *
 
 try:
@@ -245,10 +246,12 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(label)
         btnaddpro = gtk.Button('+')
         btnaddpro.set_size_request(20,0)
+        btnaddpro.connect('clicked', self.add_project)
         btnrempro = gtk.Button('-')
         btnrempro.set_size_request(20,0)
         btnedtpro = gtk.Button('...')
         btnedtpro.set_size_request(20,0)
+        btnedtpro.connect('clicked', self.edit_project)
         header.pack_start(btnaddpro, False)
         header.pack_start(btnrempro, False)
         header.pack_start(btnedtpro, False)
@@ -321,6 +324,8 @@ class MyDotWindow(xdot.DotWindow):
         if len(rownrs) == 1:
             self.pid = projects[0]
             self.fill_project_properties()
+        else:
+            self.clear_project_properties()
 
     def fill_project_properties(self):
         projectdata = DBConnection.get_project_data(self.pid)
@@ -351,6 +356,7 @@ class MyDotWindow(xdot.DotWindow):
         self.projectlist.clear()
         for row in DBConnection.get_projects(tags):
             self.projectlist.append([row[0], row[1]])
+        self.clear_project_properties()
 
     def refresh_actionlist(self):
         self.actionlist.clear()
@@ -368,6 +374,20 @@ class MyDotWindow(xdot.DotWindow):
 
     def clear_project_properties(self):
         self.ProjectNameEntry.set_text("")
+        self.ProjectPriorityEntry.set_text("")
+        self.ProjectStatusCombo.set_active(-1)
+        self.pid = None
+
+    def add_project(self, widget):
+        dialog.show_project_dialog()
+        selection = self.tagtree.get_selection()
+        self.on_tagtreeview_selection_changed(selection)
+
+    def edit_project(self, widget):
+        if self.pid is not None:
+            dialog.show_project_dialog(self.pid)
+            selection = self.tagtree.get_selection()
+            self.on_tagtreeview_selection_changed(selection)
 
 if __name__ == "__main__":
     window = MyDotWindow()

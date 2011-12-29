@@ -15,7 +15,7 @@ def get_projects(tags):
     if tags:
         c.execute("select id, name from project where id in (select pid from tag where tag in (" + ",".join(tags) + ")) order by name")
     else:
-        c.execute("select id, name from project")
+        c.execute("select id, name from project order by name")
     return c
 
 def close_connection():
@@ -117,7 +117,7 @@ def get_project_data(pid):
     return c.fetchone()
 
 def get_task_data(tid):
-    c.execute("select * from task where id = %(tid)s" % {"tid":tid})
+    c.execute("select * from task where id = %(tid)s order by name" % {"tid":tid})
     return c.fetchone()
 
 def toggle_action(id):
@@ -126,4 +126,12 @@ def toggle_action(id):
 
 def update_task(command, tid):
     c.execute("update task set %(command)s where id = %(tid)s" % {"command":command, "tid":tid})
+    conn.commit()
+
+def update_project(command, pid):
+    c.execute("update project set %(command)s where id = %(pid)s" % {"command":command, "pid":pid})
+    conn.commit()
+
+def add_project(name, status, priority):
+    c.execute("insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" % {"name":name, "status":status, "priority":priority})
     conn.commit()

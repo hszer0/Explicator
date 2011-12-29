@@ -13,6 +13,13 @@ try:
 except:
     sys.exit(1)
 
+def get_active_text(combobox):
+    model = combobox.get_model()
+    active = combobox.get_active()
+    if active < 0:
+        return None
+    return model[active][0]
+
 
 def show_project_dialog(pid=None):
     projectdialog = gtk.Dialog(title = "Project", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
@@ -49,7 +56,21 @@ def show_project_dialog(pid=None):
     ProjectProperties.pack_start(hbox, False, padding = 5)
     dhbox.pack_start(ProjectProperties)
     projectdialog.vbox.pack_start(dhbox)
+
+    if pid is not None:
+        projectdata = DBConnection.get_project_data(pid)
+        projectdialog.ProjectNameEntry.set_text(projectdata[1])
+        for index, status in enumerate(statuslist):
+            if projectdata[2] == status:
+                projectdialog.ProjectStatusCombo.set_active(index)
+        projectdialog.ProjectPriorityEntry.set_text(str(projectdata[3]))
+
     projectdialog.show_all()
     response = projectdialog.run()
+    if response == gtk.RESPONSE_ACCEPT:
+        if pid is None:
+            DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(), get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
+        else:
+            DBConnection.update_project("name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {"name":projectdialog.ProjectNameEntry.get_text(), "status":get_active_text(projectdialog.ProjectStatusCombo), "priority":projectdialog.ProjectPriorityEntry.get_text()}, pid)
 
-show_project_dialog()
+    projectdialog.destroy()
