@@ -389,6 +389,10 @@ class MyDotWindow(xdot.DotWindow):
             selection = self.tagtree.get_selection()
             self.on_tagtreeview_selection_changed(selection)
 
+    def add_task(self, widget):
+        if self.pid is not None:
+            dialog.show_task_dialog(self.pid)
+
 if __name__ == "__main__":
     window = MyDotWindow()
     window.connect('destroy', gtk.main_quit)

@@ -20,6 +20,10 @@ def get_active_text(combobox):
         return None
     return model[active][0]
 
+def show_task_dialog(pid):
+    taskdialog = gtk.Dialog(title = "Task", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+    dhbox = gtk.HBox()
+
 
 def show_project_dialog(pid=None):
     projectdialog = gtk.Dialog(title = "Project", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
