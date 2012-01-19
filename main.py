@@ -109,8 +109,10 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(label)
         btnaddtask = gtk.Button('+')
         btnaddtask.set_size_request(20,0)
+        btnaddtask.connect('clicked', self.add_task)
         btnremtask = gtk.Button('-')
         btnremtask.set_size_request(20,0)
+        btnremtask.connect('clicked', self.remove_task)
         btnedttask = gtk.Button('...')
         btnedttask.set_size_request(20,0)
         header.pack_start(btnaddtask, False)
@@ -249,6 +251,7 @@ class MyDotWindow(xdot.DotWindow):
         btnaddpro.connect('clicked', self.add_project)
         btnrempro = gtk.Button('-')
         btnrempro.set_size_request(20,0)
+        btnrempro.connect('clicked', self.remove_project)
         btnedtpro = gtk.Button('...')
         btnedtpro.set_size_request(20,0)
         btnedtpro.connect('clicked', self.edit_project)
@@ -340,12 +343,14 @@ class MyDotWindow(xdot.DotWindow):
         self.refresh_actionlist()
         self.refresh_view()
 
-    def refresh_view(self):
-        x, y = self.widget.get_current_pos()
-        z = self.widget.zoom_ratio
+    def refresh_view(self, resize = True):
+        if resize:
+            x, y = self.widget.get_current_pos()
+            z = self.widget.zoom_ratio
         self.on_projecttreeview_selection_changed(self.projecttree.get_selection())
-        self.widget.zoom_ratio = z
-        self.widget.set_current_pos(x, y)
+        if resize:
+            self.widget.zoom_ratio = z
+            self.widget.set_current_pos(x, y)
 
     def refresh_tags(self):
         self.taglist.clear()
@@ -392,6 +397,17 @@ class MyDotWindow(xdot.DotWindow):
     def add_task(self, widget):
         if self.pid is not None:
             dialog.show_task_dialog(self.pid)
+            self.refresh_view(False)
+
+    def remove_task(self, widget):
+        DBConnection.remove_task(self.tid)
+        self.refresh_view(False)
+
+    def remove_project(self, widget):
+        DBConnection.remove_project(self.pid)
+        selection = self.tagtree.get_selection()
+        self.on_tagtreeview_selection_changed(selection)
+
 
 if __name__ == "__main__":
     window = MyDotWindow()

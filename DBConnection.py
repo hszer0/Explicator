@@ -135,3 +135,25 @@ def update_project(command, pid):
 def add_project(name, status, priority):
     c.execute("insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" % {"name":name, "status":status, "priority":priority})
     conn.commit()
+
+def add_task(pid, name, status, date):
+    c.execute("insert into task (name, pid, status, duedate) values ('%(name)s', %(pid)s, '%(status)s', '%(date)s')" % {"name":name, "pid":pid, "status":status, "date":date})
+    conn.commit()
+
+def remove_project(pid):
+    c.execute("delete from project where id = %(pid)s" % {"pid":pid})
+    clean_tasks()
+    conn.commit()
+
+def remove_task(tid):
+    c.execute("delete from task where id = %(tid)s" % {"tid":tid})
+    clean_actions()
+    conn.commit()
+
+def clean_actions(tid):
+    c.execute("delete from action where tid not in (select distinct id from task)")
+    conn.commit()
+
+def clean_tasks(pid):
+    c.execute("delete from task where pid not in (select distinct id from project)")
+    conn.commit()
