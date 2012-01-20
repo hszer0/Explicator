@@ -41,6 +41,7 @@ class MyDotWindow(xdot.DotWindow):
         window = self
         window.set_title('Explicator')
         window.set_default_size(800, 600)
+        window.set_position(gtk.WIN_POS_CENTER_ALWAYS)
         DBConnection.open_connection()
 
         self.pid = ''
@@ -400,13 +401,18 @@ class MyDotWindow(xdot.DotWindow):
             self.refresh_view(False)
 
     def remove_task(self, widget):
-        DBConnection.remove_task(self.tid)
-        self.refresh_view(False)
+        taskdata = DBConnection.get_task_data(self.tid)
+        if dialog.show_confirm_dialog("Are you sure you want to delete '%(taskname)s'? All dependencies and actions for this task will be removed." % {"taskname":taskdata[1]}):
+            DBConnection.remove_task(self.tid)
+            self.refresh_view(False)
 
     def remove_project(self, widget):
-        DBConnection.remove_project(self.pid)
-        selection = self.tagtree.get_selection()
-        self.on_tagtreeview_selection_changed(selection)
+        projectdata = DBConnection.get_project_data(self.pid)
+        if dialog.show_confirm_dialog("Are you sure you want to delete '%(projectname)s'? All items within the project will be removed." % {"projectname":projectdata[1]}):
+            DBConnection.remove_project(self.pid)
+            selection = self.tagtree.get_selection()
+            self.on_tagtreeview_selection_changed(selection)
+            self.refresh_tags()
 
 
 if __name__ == "__main__":

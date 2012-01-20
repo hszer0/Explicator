@@ -57,6 +57,7 @@ def show_task_dialog(pid):
     taskdialog.vbox.pack_start(dhbox)
     taskdialog.TaskStatusCombo.set_active(1)
 
+    taskdialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
     taskdialog.show_all()
     response = taskdialog.run()
 
@@ -113,6 +114,7 @@ def show_project_dialog(pid=None):
     else:
         projectdialog.ProjectStatusCombo.set_active(1)
 
+    projectdialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
     projectdialog.show_all()
     response = projectdialog.run()
     if response == gtk.RESPONSE_ACCEPT:
@@ -122,3 +124,14 @@ def show_project_dialog(pid=None):
             DBConnection.update_project("name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {"name":projectdialog.ProjectNameEntry.get_text(), "status":get_active_text(projectdialog.ProjectStatusCombo), "priority":projectdialog.ProjectPriorityEntry.get_text()}, pid)
 
     projectdialog.destroy()
+
+def show_confirm_dialog(message):
+    confirmdialog = gtk.Dialog(title = "Confirm", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_YES, gtk.RESPONSE_ACCEPT, gtk.STOCK_NO, gtk.RESPONSE_CANCEL))
+    label = gtk.Label(message)
+    label.set_alignment(0.0, 0.0)
+    confirmdialog.vbox.pack_start(label)
+    confirmdialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+    confirmdialog.show_all()
+    response = confirmdialog.run()
+    confirmdialog.destroy()
+    return response == gtk.RESPONSE_ACCEPT

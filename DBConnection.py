@@ -2,6 +2,7 @@ import sqlite3
 from globals import *
 
 conn = sqlite3.connect("explicator.db")
+conn.isolation_level = None 
 c = conn.cursor()
 
 def open_connection():
@@ -122,38 +123,29 @@ def get_task_data(tid):
 
 def toggle_action(id):
     c.execute("update action set completed = not completed where id = %(id)s" % {"id":id})
-    conn.commit()
 
 def update_task(command, tid):
     c.execute("update task set %(command)s where id = %(tid)s" % {"command":command, "tid":tid})
-    conn.commit()
 
 def update_project(command, pid):
     c.execute("update project set %(command)s where id = %(pid)s" % {"command":command, "pid":pid})
-    conn.commit()
 
 def add_project(name, status, priority):
     c.execute("insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" % {"name":name, "status":status, "priority":priority})
-    conn.commit()
 
 def add_task(pid, name, status, date):
     c.execute("insert into task (name, pid, status, duedate) values ('%(name)s', %(pid)s, '%(status)s', '%(date)s')" % {"name":name, "pid":pid, "status":status, "date":date})
-    conn.commit()
 
 def remove_project(pid):
+    c.execute("delete from tag where pid = %(pid)s" % {"pid":pid})
+    c.execute("select id from task where pid = %(pid)s" % {"pid":pid})
+    for row in c:
+        remove_task(row[0])
     c.execute("delete from project where id = %(pid)s" % {"pid":pid})
-    clean_tasks()
-    conn.commit()
 
 def remove_task(tid):
-    c.execute("delete from task where id = %(tid)s" % {"tid":tid})
-    clean_actions()
-    conn.commit()
+    cur = conn.cursor()
+    cur.execute("delete from taskdependency where %(tid)s in (parentid, childid)" % {"tid":tid})
+    cur.execute("delete from action where tid = %(tid)s" % {"tid":tid})
+    cur.execute("delete from task where id = %(tid)s" % {"tid":tid})
 
-def clean_actions(tid):
-    c.execute("delete from action where tid not in (select distinct id from task)")
-    conn.commit()
-
-def clean_tasks(pid):
-    c.execute("delete from task where pid not in (select distinct id from project)")
-    conn.commit()
