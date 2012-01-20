@@ -57,7 +57,7 @@ def show_task_dialog(pid):
     taskdialog.vbox.pack_start(dhbox)
     taskdialog.TaskStatusCombo.set_active(1)
 
-    taskdialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+    taskdialog.set_position(gtk.WIN_POS_CENTER)
     taskdialog.show_all()
     response = taskdialog.run()
 
@@ -65,8 +65,6 @@ def show_task_dialog(pid):
         DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo), taskdialog.TaskDateEntry.get_text())
 
     taskdialog.destroy()
-
-
 
 def show_project_dialog(pid=None):
     projectdialog = gtk.Dialog(title = "Project", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
@@ -130,7 +128,7 @@ def show_confirm_dialog(message):
     label = gtk.Label(message)
     label.set_alignment(0.0, 0.0)
     confirmdialog.vbox.pack_start(label)
-    confirmdialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+    confirmdialog.set_position(gtk.WIN_POS_CENTER)
     confirmdialog.show_all()
     response = confirmdialog.run()
     confirmdialog.destroy()

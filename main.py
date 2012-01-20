@@ -41,7 +41,7 @@ class MyDotWindow(xdot.DotWindow):
         window = self
         window.set_title('Explicator')
         window.set_default_size(800, 600)
-        window.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+        window.set_position(gtk.WIN_POS_CENTER)
         DBConnection.open_connection()
 
         self.pid = ''
