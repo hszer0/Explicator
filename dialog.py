@@ -28,7 +28,7 @@ def show_task_dialog(pid):
     TaskProperties.set_size_request(150, 135)
     label = gtk.Label()
     label.set_alignment(0,0)
-    label.set_markup("<big><b>Task Details</b></big>")
+    label.set_markup("<big><b>Add Task</b></big>")
     TaskProperties.pack_start(label, False)
     label = gtk.Label("Name")
     label.set_alignment(0.0, 0.0)
@@ -74,7 +74,10 @@ def show_project_dialog(pid=None):
     ProjectProperties.set_size_request(150, 135)
     label = gtk.Label()
     label.set_alignment(0,0)
-    label.set_markup("<big><b>Project Details</b></big>")
+    if pid is None:
+        label.set_markup("<big><b>Add Project</b></big>")
+    else:
+        label.set_markup("<big><b>Edit Project</b></big>")
     ProjectProperties.pack_start(label, False)
     label = gtk.Label("Name")
     label.set_alignment(0.0, 0.0)
@@ -122,6 +125,10 @@ def show_project_dialog(pid=None):
             DBConnection.update_project("name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {"name":projectdialog.ProjectNameEntry.get_text(), "status":get_active_text(projectdialog.ProjectStatusCombo), "priority":projectdialog.ProjectPriorityEntry.get_text()}, pid)
 
     projectdialog.destroy()
+
+def show_action_dialog():
+    action_dialog = gtk.Dialog(title = "Action", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_YES, gtk.RESPONSE_ACCEPT, gtk.STOCK_NO, gtk.RESPONSE_CANCEL))
+
 
 def show_confirm_dialog(message):
     confirmdialog = gtk.Dialog(title = "Confirm", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_YES, gtk.RESPONSE_ACCEPT, gtk.STOCK_NO, gtk.RESPONSE_CANCEL))
