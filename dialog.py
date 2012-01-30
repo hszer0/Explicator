@@ -5,6 +5,7 @@ from globals import *
 
 try:
     import pygtk
+
     pygtk.require("2.0")
 except:
     pass
@@ -20,14 +21,16 @@ def get_active_text(combobox):
         return None
     return model[active][0]
 
+
 def show_task_dialog(pid):
-    taskdialog = gtk.Dialog(title = "Task", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+    taskdialog = gtk.Dialog(title="Task", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+        buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
     dhbox = gtk.HBox()
 
     TaskProperties = gtk.VBox()
     TaskProperties.set_size_request(150, 135)
     label = gtk.Label()
-    label.set_alignment(0,0)
+    label.set_alignment(0, 0)
     label.set_markup("<big><b>Add Task</b></big>")
     TaskProperties.pack_start(label, False)
     label = gtk.Label("Name")
@@ -52,7 +55,7 @@ def show_task_dialog(pid):
     vbox.pack_start(label)
     vbox.pack_start(taskdialog.TaskDateEntry)
     hbox.pack_start(vbox)
-    TaskProperties.pack_start(hbox, False, padding = 5)
+    TaskProperties.pack_start(hbox, False, padding=5)
     dhbox.pack_start(TaskProperties)
     taskdialog.vbox.pack_start(dhbox)
     taskdialog.TaskStatusCombo.set_active(1)
@@ -62,18 +65,21 @@ def show_task_dialog(pid):
     response = taskdialog.run()
 
     if response == gtk.RESPONSE_ACCEPT:
-        DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo), taskdialog.TaskDateEntry.get_text())
+        DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo),
+            taskdialog.TaskDateEntry.get_text())
 
     taskdialog.destroy()
 
+
 def show_project_dialog(pid=None):
-    projectdialog = gtk.Dialog(title = "Project", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+    projectdialog = gtk.Dialog(title="Project", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+        buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
     dhbox = gtk.HBox()
 
     ProjectProperties = gtk.VBox()
     ProjectProperties.set_size_request(150, 135)
     label = gtk.Label()
-    label.set_alignment(0,0)
+    label.set_alignment(0, 0)
     if pid is None:
         label.set_markup("<big><b>Add Project</b></big>")
     else:
@@ -101,12 +107,12 @@ def show_project_dialog(pid=None):
     vbox.pack_start(label)
     vbox.pack_start(projectdialog.ProjectPriorityEntry)
     hbox.pack_start(vbox)
-    ProjectProperties.pack_start(hbox, False, padding = 5)
+    ProjectProperties.pack_start(hbox, False, padding=5)
     dhbox.pack_start(ProjectProperties)
     projectdialog.vbox.pack_start(dhbox)
 
     if pid is not None:
-        projectdata = DBConnection.get_project_data(pid)
+        projectdata = DBConnection.get_data("project", pid)
         projectdialog.ProjectNameEntry.set_text(projectdata[1])
         for index, status in enumerate(statuslist):
             if projectdata[2] == status:
@@ -120,18 +126,68 @@ def show_project_dialog(pid=None):
     response = projectdialog.run()
     if response == gtk.RESPONSE_ACCEPT:
         if pid is None:
-            DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(), get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
+            DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(),
+                get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
         else:
-            DBConnection.update_project("name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {"name":projectdialog.ProjectNameEntry.get_text(), "status":get_active_text(projectdialog.ProjectStatusCombo), "priority":projectdialog.ProjectPriorityEntry.get_text()}, pid)
+            DBConnection.update_project("name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {
+                "name": projectdialog.ProjectNameEntry.get_text(),
+                "status": get_active_text(projectdialog.ProjectStatusCombo),
+                "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
 
     projectdialog.destroy()
 
-def show_action_dialog():
-    action_dialog = gtk.Dialog(title = "Action", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_YES, gtk.RESPONSE_ACCEPT, gtk.STOCK_NO, gtk.RESPONSE_CANCEL))
+
+def show_action_dialog(tid, aid=None):
+    actiondialog = gtk.Dialog(title="Action", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+        buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+
+    actiondialog.vbox.set_size_request(250, 135)
+    label = gtk.Label()
+    label.set_alignment(0, 0)
+    if aid is None:
+        label.set_markup("<big><b>Add Action</b></big>")
+    else:
+        label.set_markup("<big><b>Edit Action</b></big>")
+
+    actiondialog.vbox.pack_start(label, False)
+    label = gtk.Label("Name")
+    label.set_alignment(0.0, 0.0)
+    actiondialog.vbox.pack_start(label, False)
+    actiondialog.actionentry = gtk.Entry(max=50)
+    actiondialog.vbox.pack_start(actiondialog.actionentry, False)
+    label = gtk.Label("Warning Date")
+    label.set_alignment(0.0, 0.0)
+    actiondialog.vbox.pack_start(label, False)
+    actiondialog.warningentry = gtk.Entry(max=50)
+    actiondialog.vbox.pack_start(actiondialog.warningentry, False)
+    actiondialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+
+    if aid is not None:
+        actiondata = DBConnection.get_data("action", aid)
+        actiondialog.actionentry.set_text(actiondata[1])
+        actiondialog.warningentry.set_text(actiondata[4])
+    else:
+        actiondialog.warningentry.set_text("1901-01-01")
+
+    actiondialog.show_all()
+    response = actiondialog.run()
+
+    if response == gtk.RESPONSE_ACCEPT:
+        if aid is None:
+            DBConnection.add_action(actiondialog.actionentry.get_text(), tid, 0,
+                actiondialog.warningentry.get_text())
+        else:
+            DBConnection.update_action(
+                "name = '%(name)s', tid = %(tid)s, completed = 0, warningdate = '%(warningdate)s'" % {
+                    "name": actiondialog.actionentry.get_text(), "tid": tid,
+                    "warningdate": actiondialog.warningentry.get_text()}, aid)
+
+    actiondialog.destroy()
 
 
 def show_confirm_dialog(message):
-    confirmdialog = gtk.Dialog(title = "Confirm", flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, buttons = (gtk.STOCK_YES, gtk.RESPONSE_ACCEPT, gtk.STOCK_NO, gtk.RESPONSE_CANCEL))
+    confirmdialog = gtk.Dialog(title="Confirm", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+        buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
     label = gtk.Label(message)
     label.set_alignment(0.0, 0.0)
     confirmdialog.vbox.pack_start(label)

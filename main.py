@@ -6,6 +6,7 @@ from globals import *
 
 try:
     import pygtk
+
     pygtk.require("2.0")
 except:
     pass
@@ -22,8 +23,8 @@ def get_active_text(combobox):
         return None
     return model[active][0]
 
-class MyDotWindow(xdot.DotWindow):
 
+class MyDotWindow(xdot.DotWindow):
     ui = '''
     <ui>
         <toolbar name="ToolBar">
@@ -60,7 +61,7 @@ class MyDotWindow(xdot.DotWindow):
         self.tagtree.set_headers_visible(False)
 
         #Treeview with Projects
-        self.projectlist = gtk.ListStore(int,str)
+        self.projectlist = gtk.ListStore(int, str)
         self.projecttree = gtk.TreeView(self.projectlist)
         self.projecttree.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
         self.projecttree.set_enable_search(True)
@@ -73,7 +74,7 @@ class MyDotWindow(xdot.DotWindow):
         ProjectProperties = gtk.VBox()
         ProjectProperties.set_size_request(150, 135)
         label = gtk.Label()
-        label.set_alignment(0,0)
+        label.set_alignment(0, 0)
         label.set_markup("<big><b>Project Details</b></big>")
         ProjectProperties.pack_start(label, False)
         label = gtk.Label("Name")
@@ -98,24 +99,24 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(label)
         vbox.pack_start(self.ProjectPriorityEntry)
         hbox.pack_start(vbox)
-        ProjectProperties.pack_start(hbox, False, padding = 5)
+        ProjectProperties.pack_start(hbox, False, padding=5)
 
         #TaskProperties
         TaskProperties = gtk.VBox()
         TaskProperties.set_size_request(170, 135)
         header = gtk.HBox()
         label = gtk.Label()
-        label.set_alignment(0,0)
+        label.set_alignment(0, 0)
         label.set_markup("<big><b>Task</b></big>")
         header.pack_start(label)
         btnaddtask = gtk.Button('+')
-        btnaddtask.set_size_request(20,0)
+        btnaddtask.set_size_request(20, 0)
         btnaddtask.connect('clicked', self.add_task)
         btnremtask = gtk.Button('-')
-        btnremtask.set_size_request(20,0)
+        btnremtask.set_size_request(20, 0)
         btnremtask.connect('clicked', self.remove_task)
         btnedttask = gtk.Button('...')
-        btnedttask.set_size_request(20,0)
+        btnedttask.set_size_request(20, 0)
         header.pack_start(btnaddtask, False)
         header.pack_start(btnremtask, False)
         header.pack_start(btnedttask, False)
@@ -144,16 +145,17 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(label)
         vbox.pack_start(self.TaskDueDateEntry)
         hbox.pack_start(vbox)
-        TaskProperties.pack_start(hbox, False, padding = 5)
+        TaskProperties.pack_start(hbox, False, padding=5)
 
         #Treeview Actions
         self.actionlist = gtk.ListStore(int, str, int, bool)
         self.actiontree = gtk.TreeView(self.actionlist)
+        self.actiontree.get_selection().connect('changed', lambda s: self.on_actiontreeview_selection_changed(s))
         actionselection = self.tagtree.get_selection()
         actionselection.set_mode(gtk.SELECTION_MULTIPLE)
         self.checkbox = gtk.CellRendererToggle()
         self.checkbox.set_property('activatable', True)
-        self.column1 = gtk.TreeViewColumn("Completed",self.checkbox)
+        self.column1 = gtk.TreeViewColumn("Completed", self.checkbox)
         self.column1.add_attribute(self.checkbox, "active", 3)
         self.column1.set_max_width(100)
         self.checkbox.connect('toggled', self.on_action_toggled, self.actionlist)
@@ -167,15 +169,18 @@ class MyDotWindow(xdot.DotWindow):
 
         header = gtk.HBox()
         label = gtk.Label()
-        label.set_alignment(0,0)
+        label.set_alignment(0, 0)
         label.set_markup("<big><b>Actions</b></big>")
         header.pack_start(label)
         btnaddact = gtk.Button('+')
-        btnaddact.set_size_request(20,0)
+        btnaddact.connect('clicked', self.add_action)
+        btnaddact.set_size_request(20, 0)
         btnremact = gtk.Button('-')
-        btnremact.set_size_request(20,0)
+        btnremact.connect('clicked', self.remove_action)
+        btnremact.set_size_request(20, 0)
         btnedtact = gtk.Button('...')
-        btnedtact.set_size_request(20,0)
+        btnedtact.connect('clicked', self.edit_action)
+        btnedtact.set_size_request(20, 0)
         header.pack_start(btnaddact, False)
         header.pack_start(btnremact, False)
         header.pack_start(btnedtact, False)
@@ -206,7 +211,7 @@ class MyDotWindow(xdot.DotWindow):
             ('ZoomOut', gtk.STOCK_ZOOM_OUT, None, None, None, self.widget.on_zoom_out),
             ('ZoomFit', gtk.STOCK_ZOOM_FIT, None, None, None, self.widget.on_zoom_fit),
             ('Zoom100', gtk.STOCK_ZOOM_100, None, None, None, self.widget.on_zoom_100),
-        ))
+            ))
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
@@ -223,15 +228,15 @@ class MyDotWindow(xdot.DotWindow):
         vbox.set_size_request(150, 300)
         header = gtk.HBox()
         label = gtk.Label()
-        label.set_alignment(0,0)
+        label.set_alignment(0, 0)
         label.set_markup("<big><b>Tags</b></big>")
         header.pack_start(label)
         btnaddtag = gtk.Button('+')
-        btnaddtag.set_size_request(20,0)
+        btnaddtag.set_size_request(20, 0)
         btnremtag = gtk.Button('-')
-        btnremtag.set_size_request(20,0)
+        btnremtag.set_size_request(20, 0)
         btnedttag = gtk.Button('...')
-        btnedttag.set_size_request(20,0)
+        btnedttag.set_size_request(20, 0)
         header.pack_start(btnaddtag, False)
         header.pack_start(btnremtag, False)
         header.pack_start(btnedttag, False)
@@ -244,17 +249,17 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(hseparator, False)
         header = gtk.HBox()
         label = gtk.Label()
-        label.set_alignment(0,0)
+        label.set_alignment(0, 0)
         label.set_markup("<big><b>Projects</b></big>")
         header.pack_start(label)
         btnaddpro = gtk.Button('+')
-        btnaddpro.set_size_request(20,0)
+        btnaddpro.set_size_request(20, 0)
         btnaddpro.connect('clicked', self.add_project)
         btnrempro = gtk.Button('-')
-        btnrempro.set_size_request(20,0)
+        btnrempro.set_size_request(20, 0)
         btnrempro.connect('clicked', self.remove_project)
         btnedtpro = gtk.Button('...')
-        btnedtpro.set_size_request(20,0)
+        btnedtpro.set_size_request(20, 0)
         btnedtpro.connect('clicked', self.edit_project)
         header.pack_start(btnaddpro, False)
         header.pack_start(btnrempro, False)
@@ -276,10 +281,10 @@ class MyDotWindow(xdot.DotWindow):
         hbox = gtk.HBox()
         hbox.pack_start(ProjectProperties, False)
         vseparator = gtk.VSeparator()
-        hbox.pack_start(vseparator, False, padding = 3)
+        hbox.pack_start(vseparator, False, padding=3)
         hbox.pack_start(TaskProperties, False)
         vseparator = gtk.VSeparator()
-        hbox.pack_start(vseparator, False, padding = 3)
+        hbox.pack_start(vseparator, False, padding=3)
         hbox.pack_start(Actions, False)
 
         # Create a Toolbar
@@ -301,7 +306,7 @@ class MyDotWindow(xdot.DotWindow):
         self.pid = get_project_id(url)
         self.tid = get_task_id(url)
         self.fill_project_properties()
-        taskdata = DBConnection.get_task_data(self.tid)
+        taskdata = DBConnection.get_data("task", self.tid)
         self.TaskNameEntry.set_text(taskdata[1])
         for index, status in enumerate(statuslist):
             if taskdata[3] == status:
@@ -316,6 +321,12 @@ class MyDotWindow(xdot.DotWindow):
             iter = model.get_iter(row)
             tags.append("'" + model.get_value(iter, 0) + "'")
         self.refresh_projects(tags)
+
+    def on_actiontreeview_selection_changed(self, selection):
+        (model, rownrs) = selection.get_selected_rows()
+        for row in rownrs:
+            iter = model.get_iter(row)
+            self.aid = model.get_value(iter, 0)
 
     def on_projecttreeview_selection_changed(self, selection):
         projects = []
@@ -332,7 +343,7 @@ class MyDotWindow(xdot.DotWindow):
             self.clear_project_properties()
 
     def fill_project_properties(self):
-        projectdata = DBConnection.get_project_data(self.pid)
+        projectdata = DBConnection.get_data("project", self.pid)
         self.ProjectNameEntry.set_text(projectdata[1])
         for index, status in enumerate(statuslist):
             if projectdata[2] == status:
@@ -344,7 +355,7 @@ class MyDotWindow(xdot.DotWindow):
         self.refresh_actionlist()
         self.refresh_view()
 
-    def refresh_view(self, resize = True):
+    def refresh_view(self, resize=True):
         if resize:
             x, y = self.widget.get_current_pos()
             z = self.widget.zoom_ratio
@@ -356,7 +367,7 @@ class MyDotWindow(xdot.DotWindow):
     def refresh_tags(self):
         self.taglist.clear()
         for row in DBConnection.get_tags():
-            self.taglist.append([row[0],])
+            self.taglist.append([row[0], ])
 
     def refresh_projects(self, tags=None):
         self.projectlist.clear()
@@ -373,9 +384,9 @@ class MyDotWindow(xdot.DotWindow):
         window.set_dotcode(dotcode)
 
     def on_status_change_task(self, combobox):
-        taskdata = DBConnection.get_task_data(self.tid)
+        taskdata = DBConnection.get_data("task", self.tid)
         if taskdata[3] != get_active_text(combobox):
-            DBConnection.update_task("status = '%(status)s'" % {"status":get_active_text(combobox)},self.tid)
+            DBConnection.update_task("status = '%(status)s'" % {"status": get_active_text(combobox)}, self.tid)
             self.refresh_view()
 
     def clear_project_properties(self):
@@ -401,18 +412,40 @@ class MyDotWindow(xdot.DotWindow):
             self.refresh_view(False)
 
     def remove_task(self, widget):
-        taskdata = DBConnection.get_task_data(self.tid)
-        if dialog.show_confirm_dialog("Are you sure you want to delete '%(taskname)s'? All dependencies and actions for this task will be removed." % {"taskname":taskdata[1]}):
+        taskdata = DBConnection.get_data("task", self.tid)
+        if dialog.show_confirm_dialog(
+            "Are you sure you want to delete '%(taskname)s'? All dependencies and actions for this task will be removed." % {
+                "taskname": taskdata[1]}):
             DBConnection.remove_task(self.tid)
             self.refresh_view(False)
 
     def remove_project(self, widget):
-        projectdata = DBConnection.get_project_data(self.pid)
-        if dialog.show_confirm_dialog("Are you sure you want to delete '%(projectname)s'? All items within the project will be removed." % {"projectname":projectdata[1]}):
+        projectdata = DBConnection.get_data("project", self.pid)
+        if dialog.show_confirm_dialog(
+            "Are you sure you want to delete '%(projectname)s'? All items within the project will be removed." % {
+                "projectname": projectdata[1]}):
             DBConnection.remove_project(self.pid)
             selection = self.tagtree.get_selection()
             self.on_tagtreeview_selection_changed(selection)
             self.refresh_tags()
+
+    def add_action(self, widget):
+        if self.tid != '':
+            dialog.show_action_dialog(self.tid)
+            self.refresh_actionlist()
+            self.refresh_view()
+
+    def edit_action(self, widget):
+        if self.tid != '':
+            dialog.show_action_dialog(self.tid, self.aid)
+            self.refresh_actionlist()
+            self.refresh_view()
+
+    def remove_action(self, widget):
+        if self.aid != '':
+            DBConnection.remove_action(self.aid)
+            self.refresh_actionlist()
+            self.refresh_view()
 
 
 if __name__ == "__main__":

@@ -2,29 +2,34 @@ import sqlite3
 from globals import *
 
 conn = sqlite3.connect("explicator.db")
-conn.isolation_level = None 
+conn.isolation_level = None
 c = conn.cursor()
 
 def open_connection():
     c.execute("PRAGMA foreign_keys = ON;")
 
+
 def get_tags():
     c.execute("select tag from tag")
     return c
 
+
 def get_projects(tags):
     if tags:
-        c.execute("select id, name from project where id in (select pid from tag where tag in (" + ",".join(tags) + ")) order by name")
+        c.execute("select id, name from project where id in (select pid from tag where tag in (" + ",".join(
+            tags) + ")) order by name")
     else:
         c.execute("select id, name from project order by name")
     return c
 
+
 def close_connection():
     c.close()
 
+
 def get_dependencies(pid):
     c.execute("""select pid, parentid, childid from taskdependency
-                 join task on task.id = taskdependency.parentid and task.pid = %(pid)s """ % {"pid":pid})
+                 join task on task.id = taskdependency.parentid and task.pid = %(pid)s """ % {"pid": pid})
     dependencies = ""
     for row in c:
         dependencies += "P" + str(row[0]) + "T" + str(row[1]) + " -> P" + str(row[0]) + "T" + str(row[2]) + "; "
@@ -36,30 +41,33 @@ def get_dependencies(pid):
     union
     select childid from taskdependency join task on task.id = taskdependency.parentid and task.pid = %(pid)s)
     and t.pid = %(pid)s
-    """ % {"pid":pid})
+    """ % {"pid": pid})
     for row in c:
         dependencies += "P" + str(row[0]) + "T" + str(row[1]) + "; "
     return dependencies
+
 
 def get_actionlist(tid):
     cur = conn.cursor()
     cur.execute("""
     select * from action where tid = %(tid)s
-    """ % {"tid":tid})
+    """ % {"tid": tid})
     return cur
+
 
 def get_actions(tid):
     actions = ''
     cur = conn.cursor()
     cur.execute("""
     select * from action where tid = %(tid)s
-    """ % {"tid":tid})
+    """ % {"tid": tid})
     for row in cur:
         if row[3]:
             actions += "\[v\] - " + str(row[1]) + "\l"
         else:
             actions += "\[_\] - " + str(row[1]) + "\l"
     return actions
+
 
 def generate_dotcode(projectlist=None):
     dotcode = """
@@ -83,7 +91,7 @@ def generate_dotcode(projectlist=None):
     for project in projectlist:
         projects.append(str(project))
 
-    c.execute("select * from task where pid in (%(projects)s)" % {"projects":",".join(projects)})
+    c.execute("select * from task where pid in (%(projects)s)" % {"projects": ",".join(projects)})
     for row in c:
         dotcode += """
         %(pid_tid)s [
@@ -92,10 +100,11 @@ def generate_dotcode(projectlist=None):
             color = %(color)s
             fontcolor = %(color)s
         ]
-        """ % {"tasks":get_actions(row[0]), "name":row[1], "status":row[3], "due":row[4], "pid_tid":"P" + str(row[2]) + "T" + str(row[0]),"color":get_color_from_status(row[3])}
+        """ % {"tasks": get_actions(row[0]), "name": row[1], "status": row[3], "due": row[4],
+               "pid_tid": "P" + str(row[2]) + "T" + str(row[0]), "color": get_color_from_status(row[3])}
 
     for pid in projectlist:
-        c.execute("select name from project where id = %(id)s" % {"id":pid})
+        c.execute("select name from project where id = %(id)s" % {"id": pid})
         name = c.fetchone()[0]
         dotcode += """
         subgraph cluster%(pid)s {
@@ -107,45 +116,66 @@ def generate_dotcode(projectlist=None):
         fontname = "Bitstream Vera Sans";
         fontsize = 12;
         }
-        """ % {"dependencies":get_dependencies(pid),"pid":pid,"label":name}
+        """ % {"dependencies": get_dependencies(pid), "pid": pid, "label": name}
     dotcode += """
     }
     """
     return dotcode
 
-def get_project_data(pid):
-    c.execute("select * from project where id = %(pid)s" % {"pid":pid})
+
+def get_data(table, id):
+    c.execute("select * from %(table)s where id = %(id)s" % {"table": table, "id": id})
     return c.fetchone()
 
-def get_task_data(tid):
-    c.execute("select * from task where id = %(tid)s order by name" % {"tid":tid})
-    return c.fetchone()
 
 def toggle_action(id):
-    c.execute("update action set completed = not completed where id = %(id)s" % {"id":id})
+    c.execute("update action set completed = not completed where id = %(id)s" % {"id": id})
+
 
 def update_task(command, tid):
-    c.execute("update task set %(command)s where id = %(tid)s" % {"command":command, "tid":tid})
+    c.execute("update task set %(command)s where id = %(tid)s" % {"command": command, "tid": tid})
+
 
 def update_project(command, pid):
-    c.execute("update project set %(command)s where id = %(pid)s" % {"command":command, "pid":pid})
+    c.execute("update project set %(command)s where id = %(pid)s" % {"command": command, "pid": pid})
+
 
 def add_project(name, status, priority):
-    c.execute("insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" % {"name":name, "status":status, "priority":priority})
+    c.execute(
+        "insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" % {"name": name,
+                                                                                                          "status": status
+            , "priority": priority})
+
 
 def add_task(pid, name, status, date):
-    c.execute("insert into task (name, pid, status, duedate) values ('%(name)s', %(pid)s, '%(status)s', '%(date)s')" % {"name":name, "pid":pid, "status":status, "date":date})
+    c.execute("insert into task (name, pid, status, duedate) values ('%(name)s', %(pid)s, '%(status)s', '%(date)s')" % {
+        "name": name, "pid": pid, "status": status, "date": date})
+
 
 def remove_project(pid):
-    c.execute("delete from tag where pid = %(pid)s" % {"pid":pid})
-    c.execute("select id from task where pid = %(pid)s" % {"pid":pid})
+    c.execute("delete from tag where pid = %(pid)s" % {"pid": pid})
+    c.execute("select id from task where pid = %(pid)s" % {"pid": pid})
     for row in c:
         remove_task(row[0])
-    c.execute("delete from project where id = %(pid)s" % {"pid":pid})
+    c.execute("delete from project where id = %(pid)s" % {"pid": pid})
+
 
 def remove_task(tid):
     cur = conn.cursor()
-    cur.execute("delete from taskdependency where %(tid)s in (parentid, childid)" % {"tid":tid})
-    cur.execute("delete from action where tid = %(tid)s" % {"tid":tid})
-    cur.execute("delete from task where id = %(tid)s" % {"tid":tid})
+    cur.execute("delete from taskdependency where %(tid)s in (parentid, childid)" % {"tid": tid})
+    cur.execute("delete from action where tid = %(tid)s" % {"tid": tid})
+    cur.execute("delete from task where id = %(tid)s" % {"tid": tid})
 
+
+def update_action(command, aid):
+    c.execute("update action set %(command)s where id = %(aid)s" % {"command": command, "aid": aid})
+
+
+def add_action(name, tid, completed, warningdate):
+    c.execute(
+        "insert into action (name, tid, completed, warningdate) values ('%(name)s', %(tid)s, %(completed)s, '%(warningdate)s')" % {
+            "name": name, "tid": tid, "completed": completed, "warningdate": warningdate})
+
+
+def remove_action(aid):
+    c.execute("delete from action where id = %(aid)s" % {"aid": aid})
