@@ -22,7 +22,7 @@ def get_active_text(combobox):
     return model[active][0]
 
 
-def show_task_dialog(pid):
+def show_task_dialog(pid, tid = None):
     taskdialog = gtk.Dialog(title="Task", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
         buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
     dhbox = gtk.HBox()
@@ -31,7 +31,10 @@ def show_task_dialog(pid):
     TaskProperties.set_size_request(150, 135)
     label = gtk.Label()
     label.set_alignment(0, 0)
-    label.set_markup("<big><b>Add Task</b></big>")
+    if tid is None:
+        label.set_markup("<big><b>Add Task</b></big>")
+    else:
+        label.set_markup("<big><b>Edit Task</b></big>")
     TaskProperties.pack_start(label, False)
     label = gtk.Label("Name")
     label.set_alignment(0.0, 0.0)
@@ -58,15 +61,30 @@ def show_task_dialog(pid):
     TaskProperties.pack_start(hbox, False, padding=5)
     dhbox.pack_start(TaskProperties)
     taskdialog.vbox.pack_start(dhbox)
-    taskdialog.TaskStatusCombo.set_active(1)
+
+    if tid is not None:
+        taskdata = DBConnection.get_data("task", tid)
+        taskdialog.TaskNameEntry.set_text(taskdata[1])
+        for index, status in enumerate(statuslist):
+            if taskdata[3] == status:
+                taskdialog.TaskStatusCombo.set_active(index)
+        taskdialog.TaskDateEntry.set_text(taskdata[4])
+    else:
+        taskdialog.TaskStatusCombo.set_active(1)
 
     taskdialog.set_position(gtk.WIN_POS_CENTER)
     taskdialog.show_all()
     response = taskdialog.run()
 
     if response == gtk.RESPONSE_ACCEPT:
-        DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo),
-            taskdialog.TaskDateEntry.get_text())
+        if tid is None:
+            DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo),
+                taskdialog.TaskDateEntry.get_text())
+        else:
+            DBConnection.update_table("task", "name = '%(name)s', status = '%(status)s', duedate = '%(duedate)s'" %
+                {"name": taskdialog.TaskNameEntry.get_text().replace("'", "''"),
+                "status": get_active_text(taskdialog.TaskStatusCombo),
+                "duedate": taskdialog.TaskDateEntry.get_text()}, tid)
 
     taskdialog.destroy()
 
@@ -120,21 +138,24 @@ def show_project_dialog(pid=None):
         projectdialog.ProjectPriorityEntry.set_text(str(projectdata[3]))
     else:
         projectdialog.ProjectStatusCombo.set_active(1)
-
+        projectdialog.ProjectPriorityEntry.set_text("100")
     projectdialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
     projectdialog.show_all()
     response = projectdialog.run()
-    if response == gtk.RESPONSE_ACCEPT:
-        if pid is None:
-            DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(),
-                get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
-        else:
-            DBConnection.update_project("name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {
-                "name": projectdialog.ProjectNameEntry.get_text(),
-                "status": get_active_text(projectdialog.ProjectStatusCombo),
-                "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
 
-    projectdialog.destroy()
+    if response == gtk.RESPONSE_ACCEPT:
+        if projectdialog.ProjectPriorityEntry.get_text().isdigit():
+            if pid is None:
+                DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(),
+                    get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
+            else:
+                DBConnection.update_table("project", "name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {
+                    "name": projectdialog.ProjectNameEntry.get_text().replace("'", "''"),
+                    "status": get_active_text(projectdialog.ProjectStatusCombo),
+                    "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
+            projectdialog.destroy()
+    else:
+        projectdialog.destroy()
 
 
 def show_action_dialog(tid, aid=None):
@@ -155,19 +176,16 @@ def show_action_dialog(tid, aid=None):
     actiondialog.vbox.pack_start(label, False)
     actiondialog.actionentry = gtk.Entry(max=50)
     actiondialog.vbox.pack_start(actiondialog.actionentry, False)
-    label = gtk.Label("Warning Date")
-    label.set_alignment(0.0, 0.0)
-    actiondialog.vbox.pack_start(label, False)
-    actiondialog.warningentry = gtk.Entry(max=50)
-    actiondialog.vbox.pack_start(actiondialog.warningentry, False)
+#    label = gtk.Label("Warning Date")
+#    label.set_alignment(0.0, 0.0)
+#    actiondialog.vbox.pack_start(label, False)
+#    actiondialog.warningentry = gtk.Entry(max=50)
+#    actiondialog.vbox.pack_start(actiondialog.warningentry, False)
     actiondialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
 
     if aid is not None:
         actiondata = DBConnection.get_data("action", aid)
         actiondialog.actionentry.set_text(actiondata[1])
-        actiondialog.warningentry.set_text(actiondata[4])
-    else:
-        actiondialog.warningentry.set_text("1901-01-01")
 
     actiondialog.show_all()
     response = actiondialog.run()
@@ -175,12 +193,11 @@ def show_action_dialog(tid, aid=None):
     if response == gtk.RESPONSE_ACCEPT:
         if aid is None:
             DBConnection.add_action(actiondialog.actionentry.get_text(), tid, 0,
-                actiondialog.warningentry.get_text())
+                "1901-01-01")
         else:
-            DBConnection.update_action(
-                "name = '%(name)s', tid = %(tid)s, completed = 0, warningdate = '%(warningdate)s'" % {
-                    "name": actiondialog.actionentry.get_text(), "tid": tid,
-                    "warningdate": actiondialog.warningentry.get_text()}, aid)
+            DBConnection.update_table("action",
+                "name = '%(name)s', tid = %(tid)s" % {
+                    "name": actiondialog.actionentry.get_text().replace("'", "''"), "tid": tid}, aid)
 
     actiondialog.destroy()
 

@@ -45,9 +45,9 @@ class MyDotWindow(xdot.DotWindow):
         window.set_position(gtk.WIN_POS_CENTER)
         DBConnection.open_connection()
 
-        self.pid = ''
-        self.tid = ''
-        self.aid = ''
+        self.pid = None
+        self.tid = None
+        self.aid = None
 
         #Treeview with Tags
         self.taglist = gtk.ListStore(str)
@@ -81,6 +81,7 @@ class MyDotWindow(xdot.DotWindow):
         label.set_alignment(0.0, 0.0)
         ProjectProperties.pack_start(label, False)
         self.ProjectNameEntry = gtk.Entry(max=50)
+        self.ProjectNameEntry.set_state(gtk.STATE_INSENSITIVE)
         ProjectProperties.pack_start(self.ProjectNameEntry, False)
         hbox = gtk.HBox()
         vbox = gtk.VBox()
@@ -90,8 +91,10 @@ class MyDotWindow(xdot.DotWindow):
         self.ProjectStatusCombo = gtk.combo_box_new_text()
         for status in statuslist:
             self.ProjectStatusCombo.append_text(status)
+        self.ProjectStatusCombo.connect('changed', self.on_status_change_project)
         vbox.pack_start(self.ProjectStatusCombo)
         self.ProjectPriorityEntry = gtk.Entry(max=3)
+        self.ProjectPriorityEntry.set_state(gtk.STATE_INSENSITIVE)
         hbox.pack_start(vbox, False)
         vbox = gtk.VBox()
         label = gtk.Label("Priority")
@@ -117,6 +120,7 @@ class MyDotWindow(xdot.DotWindow):
         btnremtask.connect('clicked', self.remove_task)
         btnedttask = gtk.Button('...')
         btnedttask.set_size_request(20, 0)
+        btnedttask.connect('clicked', self.edit_task)
         header.pack_start(btnaddtask, False)
         header.pack_start(btnremtask, False)
         header.pack_start(btnedttask, False)
@@ -125,6 +129,7 @@ class MyDotWindow(xdot.DotWindow):
         label.set_alignment(0, 0)
         TaskProperties.pack_start(label, False)
         self.TaskNameEntry = gtk.Entry(max=50)
+        self.TaskNameEntry.set_state(gtk.STATE_INSENSITIVE)
         TaskProperties.pack_start(self.TaskNameEntry, False)
         hbox = gtk.HBox()
         vbox = gtk.VBox()
@@ -138,6 +143,7 @@ class MyDotWindow(xdot.DotWindow):
 
         vbox.pack_start(self.TaskStatusCombo)
         self.TaskDueDateEntry = gtk.Entry(max=10)
+        self.TaskDueDateEntry.set_state(gtk.STATE_INSENSITIVE)
         hbox.pack_start(vbox, False)
         vbox = gtk.VBox()
         label = gtk.Label("Due Date")
@@ -305,7 +311,6 @@ class MyDotWindow(xdot.DotWindow):
     def on_url_clicked(self, widget, url, event):
         self.pid = get_project_id(url)
         self.tid = get_task_id(url)
-        self.fill_project_properties()
         taskdata = DBConnection.get_data("task", self.tid)
         self.TaskNameEntry.set_text(taskdata[1])
         for index, status in enumerate(statuslist):
@@ -350,6 +355,7 @@ class MyDotWindow(xdot.DotWindow):
                 self.ProjectStatusCombo.set_active(index)
         self.ProjectPriorityEntry.set_text(str(projectdata[3]))
 
+
     def on_action_toggled(self, cell, path, model):
         DBConnection.toggle_action(model[path][0])
         self.refresh_actionlist()
@@ -374,6 +380,8 @@ class MyDotWindow(xdot.DotWindow):
         for row in DBConnection.get_projects(tags):
             self.projectlist.append([row[0], row[1]])
         self.clear_project_properties()
+        self.clear_task_properties()
+        self.clear_actions()
 
     def refresh_actionlist(self):
         self.actionlist.clear()
@@ -386,8 +394,15 @@ class MyDotWindow(xdot.DotWindow):
     def on_status_change_task(self, combobox):
         taskdata = DBConnection.get_data("task", self.tid)
         if taskdata[3] != get_active_text(combobox):
-            DBConnection.update_task("status = '%(status)s'" % {"status": get_active_text(combobox)}, self.tid)
+            DBConnection.update_table("task", "status = '%(status)s'" % {"status": get_active_text(combobox)}, self.tid)
             self.refresh_view()
+
+    def on_status_change_project(self, combobox):
+        taskdata = DBConnection.get_data("project", self.pid)
+        if taskdata[2] != get_active_text(combobox):
+            DBConnection.update_table("project", "status = '%(status)s'" %
+                                                 {"status": get_active_text(combobox)}, self.pid)
+
 
     def clear_project_properties(self):
         self.ProjectNameEntry.set_text("")
@@ -395,10 +410,22 @@ class MyDotWindow(xdot.DotWindow):
         self.ProjectStatusCombo.set_active(-1)
         self.pid = None
 
+    def clear_task_properties(self):
+        self.TaskDueDateEntry.set_text("")
+        self.TaskNameEntry.set_text("")
+        self.TaskStatusCombo.set_active(-1)
+        self.tid = None
+
+    def clear_actions(self):
+        self.actionlist.clear()
+        self.aid = None
+
     def add_project(self, widget):
         dialog.show_project_dialog()
         selection = self.tagtree.get_selection()
         self.on_tagtreeview_selection_changed(selection)
+        self.clear_actions()
+        self.clear_task_properties()
 
     def edit_project(self, widget):
         if self.pid is not None:
@@ -409,7 +436,14 @@ class MyDotWindow(xdot.DotWindow):
     def add_task(self, widget):
         if self.pid is not None:
             dialog.show_task_dialog(self.pid)
-            self.refresh_view(False)
+            self.refresh_view()
+            self.clear_actions()
+            self.clear_task_properties()
+
+    def edit_task(self, widget):
+        if self.pid is not None and self.tid is not None:
+            dialog.show_task_dialog(self.pid, self.tid)
+            self.refresh_view()
 
     def remove_task(self, widget):
         taskdata = DBConnection.get_data("task", self.tid)
@@ -417,7 +451,9 @@ class MyDotWindow(xdot.DotWindow):
             "Are you sure you want to delete '%(taskname)s'? All dependencies and actions for this task will be removed." % {
                 "taskname": taskdata[1]}):
             DBConnection.remove_task(self.tid)
-            self.refresh_view(False)
+            self.refresh_view()
+            self.clear_actions()
+            self.clear_task_properties()
 
     def remove_project(self, widget):
         projectdata = DBConnection.get_data("project", self.pid)
@@ -428,21 +464,23 @@ class MyDotWindow(xdot.DotWindow):
             selection = self.tagtree.get_selection()
             self.on_tagtreeview_selection_changed(selection)
             self.refresh_tags()
+            self.clear_actions()
+            self.clear_task_properties()
 
     def add_action(self, widget):
-        if self.tid != '':
+        if self.tid is not None:
             dialog.show_action_dialog(self.tid)
             self.refresh_actionlist()
             self.refresh_view()
 
     def edit_action(self, widget):
-        if self.tid != '':
+        if self.tid is not None:
             dialog.show_action_dialog(self.tid, self.aid)
             self.refresh_actionlist()
             self.refresh_view()
 
     def remove_action(self, widget):
-        if self.aid != '':
+        if self.aid is not None:
             DBConnection.remove_action(self.aid)
             self.refresh_actionlist()
             self.refresh_view()

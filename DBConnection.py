@@ -132,24 +132,15 @@ def toggle_action(id):
     c.execute("update action set completed = not completed where id = %(id)s" % {"id": id})
 
 
-def update_task(command, tid):
-    c.execute("update task set %(command)s where id = %(tid)s" % {"command": command, "tid": tid})
-
-
-def update_project(command, pid):
-    c.execute("update project set %(command)s where id = %(pid)s" % {"command": command, "pid": pid})
-
-
 def add_project(name, status, priority):
     c.execute(
-        "insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" % {"name": name,
-                                                                                                          "status": status
-            , "priority": priority})
+        "insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" %
+        {"name": name.replace("'", "''"), "status": status, "priority": priority})
 
 
 def add_task(pid, name, status, date):
     c.execute("insert into task (name, pid, status, duedate) values ('%(name)s', %(pid)s, '%(status)s', '%(date)s')" % {
-        "name": name, "pid": pid, "status": status, "date": date})
+        "name": name.replace("'", "''"), "pid": pid, "status": status, "date": date})
 
 
 def remove_project(pid):
@@ -167,14 +158,14 @@ def remove_task(tid):
     cur.execute("delete from task where id = %(tid)s" % {"tid": tid})
 
 
-def update_action(command, aid):
-    c.execute("update action set %(command)s where id = %(aid)s" % {"command": command, "aid": aid})
+def update_table(table, command, id):
+    c.execute("update %(table)s set %(command)s where id = %(id)s" % {"table": table, "command": command, "id": id})
 
 
 def add_action(name, tid, completed, warningdate):
     c.execute(
         "insert into action (name, tid, completed, warningdate) values ('%(name)s', %(tid)s, %(completed)s, '%(warningdate)s')" % {
-            "name": name, "tid": tid, "completed": completed, "warningdate": warningdate})
+            "name": name.replace("'", "''"), "tid": tid, "completed": completed, "warningdate": warningdate})
 
 
 def remove_action(aid):

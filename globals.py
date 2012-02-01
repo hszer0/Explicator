@@ -17,4 +17,3 @@ def get_color_from_status(status):
             return c
     return 'black'
 
-
