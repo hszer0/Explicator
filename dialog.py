@@ -28,7 +28,7 @@ def show_task_dialog(pid, tid = None):
     dhbox = gtk.HBox()
 
     TaskProperties = gtk.VBox()
-    TaskProperties.set_size_request(150, 135)
+    TaskProperties.set_size_request(200, 135)
     label = gtk.Label()
     label.set_alignment(0, 0)
     if tid is None:
@@ -80,11 +80,15 @@ def show_task_dialog(pid, tid = None):
         if tid is None:
             DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo),
                 taskdialog.TaskDateEntry.get_text())
+            taskdialog.destroy()
+            return True
         else:
             DBConnection.update_table("task", "name = '%(name)s', status = '%(status)s', duedate = '%(duedate)s'" %
                 {"name": taskdialog.TaskNameEntry.get_text().replace("'", "''"),
                 "status": get_active_text(taskdialog.TaskStatusCombo),
                 "duedate": taskdialog.TaskDateEntry.get_text()}, tid)
+            taskdialog.destroy()
+            return False
 
     taskdialog.destroy()
 
@@ -95,7 +99,7 @@ def show_project_dialog(pid=None):
     dhbox = gtk.HBox()
 
     ProjectProperties = gtk.VBox()
-    ProjectProperties.set_size_request(150, 135)
+    ProjectProperties.set_size_request(200, 135)
     label = gtk.Label()
     label.set_alignment(0, 0)
     if pid is None:
@@ -154,9 +158,10 @@ def show_project_dialog(pid=None):
                     "status": get_active_text(projectdialog.ProjectStatusCombo),
                     "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
             projectdialog.destroy()
+        return True
     else:
         projectdialog.destroy()
-
+        return False
 
 def show_action_dialog(tid, aid=None):
     actiondialog = gtk.Dialog(title="Action", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -198,8 +203,12 @@ def show_action_dialog(tid, aid=None):
             DBConnection.update_table("action",
                 "name = '%(name)s', tid = %(tid)s" % {
                     "name": actiondialog.actionentry.get_text().replace("'", "''"), "tid": tid}, aid)
+        actiondialog.destroy()
+        return True
+    else:
+        actiondialog.destroy()
+        return False
 
-    actiondialog.destroy()
 
 
 def show_confirm_dialog(message):

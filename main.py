@@ -48,6 +48,8 @@ class MyDotWindow(xdot.DotWindow):
         self.pid = None
         self.tid = None
         self.aid = None
+        self.selectparent = False
+        self.selectchild = False
 
         #Treeview with Tags
         self.taglist = gtk.ListStore(str)
@@ -70,19 +72,20 @@ class MyDotWindow(xdot.DotWindow):
         self.projecttree.get_selection().connect('changed', lambda s: self.on_projecttreeview_selection_changed(s))
         self.projecttree.set_headers_visible(False)
 
-        #ProjectProperties
-        ProjectProperties = gtk.VBox()
-        ProjectProperties.set_size_request(150, 135)
+        #projectproperties
+        self.projectproperties = gtk.VBox()
+        self.projectproperties.set_size_request(175, 155)
         label = gtk.Label()
         label.set_alignment(0, 0)
         label.set_markup("<big><b>Project Details</b></big>")
-        ProjectProperties.pack_start(label, False)
+        self.projectproperties.pack_start(label, False)
         label = gtk.Label("Name")
         label.set_alignment(0.0, 0.0)
-        ProjectProperties.pack_start(label, False)
+        self.projectproperties.pack_start(label, False)
         self.ProjectNameEntry = gtk.Entry(max=50)
         self.ProjectNameEntry.set_state(gtk.STATE_INSENSITIVE)
-        ProjectProperties.pack_start(self.ProjectNameEntry, False)
+        self.ProjectNameEntry.modify_text(gtk.STATE_INSENSITIVE, gtk.gdk.color_parse("#000000"))
+        self.projectproperties.pack_start(self.ProjectNameEntry, False)
         hbox = gtk.HBox()
         vbox = gtk.VBox()
         label = gtk.Label("Status")
@@ -95,6 +98,7 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(self.ProjectStatusCombo)
         self.ProjectPriorityEntry = gtk.Entry(max=3)
         self.ProjectPriorityEntry.set_state(gtk.STATE_INSENSITIVE)
+        self.ProjectPriorityEntry.modify_text(gtk.STATE_INSENSITIVE, gtk.gdk.color_parse("#000000"))
         hbox.pack_start(vbox, False)
         vbox = gtk.VBox()
         label = gtk.Label("Priority")
@@ -102,11 +106,11 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(label)
         vbox.pack_start(self.ProjectPriorityEntry)
         hbox.pack_start(vbox)
-        ProjectProperties.pack_start(hbox, False, padding=5)
+        self.projectproperties.pack_start(hbox, False, padding=5)
 
         #TaskProperties
-        TaskProperties = gtk.VBox()
-        TaskProperties.set_size_request(170, 135)
+        self.TaskProperties = gtk.VBox()
+        self.TaskProperties.set_size_request(200, 155)
         header = gtk.HBox()
         label = gtk.Label()
         label.set_alignment(0, 0)
@@ -124,13 +128,14 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(btnaddtask, False)
         header.pack_start(btnremtask, False)
         header.pack_start(btnedttask, False)
-        TaskProperties.pack_start(header, False)
+        self.TaskProperties.pack_start(header, False)
         label = gtk.Label("Name")
         label.set_alignment(0, 0)
-        TaskProperties.pack_start(label, False)
+        self.TaskProperties.pack_start(label, False)
         self.TaskNameEntry = gtk.Entry(max=50)
         self.TaskNameEntry.set_state(gtk.STATE_INSENSITIVE)
-        TaskProperties.pack_start(self.TaskNameEntry, False)
+        self.TaskNameEntry.modify_text(gtk.STATE_INSENSITIVE, gtk.gdk.color_parse("#000000"))
+        self.TaskProperties.pack_start(self.TaskNameEntry, False)
         hbox = gtk.HBox()
         vbox = gtk.VBox()
         label = gtk.Label("Status")
@@ -140,10 +145,10 @@ class MyDotWindow(xdot.DotWindow):
         for status in statuslist:
             self.TaskStatusCombo.append_text(status)
         self.TaskStatusCombo.connect('changed', self.on_status_change_task)
-
         vbox.pack_start(self.TaskStatusCombo)
         self.TaskDueDateEntry = gtk.Entry(max=10)
         self.TaskDueDateEntry.set_state(gtk.STATE_INSENSITIVE)
+        self.TaskDueDateEntry.modify_text(gtk.STATE_INSENSITIVE, gtk.gdk.color_parse("#000000"))
         hbox.pack_start(vbox, False)
         vbox = gtk.VBox()
         label = gtk.Label("Due Date")
@@ -151,9 +156,18 @@ class MyDotWindow(xdot.DotWindow):
         vbox.pack_start(label)
         vbox.pack_start(self.TaskDueDateEntry)
         hbox.pack_start(vbox)
-        TaskProperties.pack_start(hbox, False, padding=5)
+        self.TaskProperties.pack_start(hbox, False, padding=5)
+        hbox = gtk.HBox()
+        btntoggleparent = gtk.Button('Toggle Parent')
+        btntoggleparent.connect('clicked', self.toggle_parent_selection)
+        hbox.pack_start(btntoggleparent)
+        btntogglechild = gtk.Button('Toggle Child')
+        btntogglechild.connect('clicked', self.toggle_child_selection)
+        hbox.pack_start(btntogglechild)
+        self.TaskProperties.pack_start(hbox)
 
-        #Treeview Actions
+
+        #Treeview actions
         self.actionlist = gtk.ListStore(int, str, int, bool)
         self.actiontree = gtk.TreeView(self.actionlist)
         self.actiontree.get_selection().connect('changed', lambda s: self.on_actiontreeview_selection_changed(s))
@@ -170,8 +184,8 @@ class MyDotWindow(xdot.DotWindow):
         self.actiontree.set_headers_visible(False)
 
         #Action box
-        Actions = gtk.VBox()
-        Actions.set_size_request(400, 135)
+        self.actions = gtk.VBox()
+        self.actions.set_size_request(400, 155)
 
         header = gtk.HBox()
         label = gtk.Label()
@@ -190,11 +204,11 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(btnaddact, False)
         header.pack_start(btnremact, False)
         header.pack_start(btnedtact, False)
-        Actions.pack_start(header, False)
+        self.actions.pack_start(header, False)
         scroller = gtk.ScrolledWindow()
         scroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
         scroller.add(self.actiontree)
-        Actions.pack_start(scroller)
+        self.actions.pack_start(scroller)
 
 
         #set xdot
@@ -208,7 +222,7 @@ class MyDotWindow(xdot.DotWindow):
         window.add_accel_group(accelgroup)
 
         # Create an ActionGroup
-        actiongroup = gtk.ActionGroup('Actions')
+        actiongroup = gtk.ActionGroup('actions')
         self.actiongroup = actiongroup
 
         # Create actions
@@ -230,8 +244,8 @@ class MyDotWindow(xdot.DotWindow):
         window.add(hbox)
 
         #set Tag/Project box
-        vbox = gtk.VBox()
-        vbox.set_size_request(150, 300)
+        self.navbox = gtk.VBox()
+        self.navbox.set_size_request(150, 300)
         header = gtk.HBox()
         label = gtk.Label()
         label.set_alignment(0, 0)
@@ -246,13 +260,13 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(btnaddtag, False)
         header.pack_start(btnremtag, False)
         header.pack_start(btnedttag, False)
-        vbox.pack_start(header, False)
+        self.navbox.pack_start(header, False)
         scroller = gtk.ScrolledWindow()
         scroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
         scroller.add(self.tagtree)
-        vbox.pack_start(scroller)
+        self.navbox.pack_start(scroller)
         hseparator = gtk.HSeparator()
-        vbox.pack_start(hseparator, False)
+        self.navbox.pack_start(hseparator, False)
         header = gtk.HBox()
         label = gtk.Label()
         label.set_alignment(0, 0)
@@ -270,13 +284,13 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(btnaddpro, False)
         header.pack_start(btnrempro, False)
         header.pack_start(btnedtpro, False)
-        vbox.pack_start(header, False)
+        self.navbox.pack_start(header, False)
         scroller = gtk.ScrolledWindow()
         scroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
         scroller.add(self.projecttree)
-        vbox.pack_start(scroller)
+        self.navbox.pack_start(scroller)
 
-        hbox.pack_start(vbox, False)
+        hbox.pack_start(self.navbox, False)
         vseparator = gtk.VSeparator()
         hbox.pack_start(vseparator, False)
 
@@ -285,13 +299,13 @@ class MyDotWindow(xdot.DotWindow):
 
         # Setup property box
         hbox = gtk.HBox()
-        hbox.pack_start(ProjectProperties, False)
+        hbox.pack_start(self.projectproperties, False)
         vseparator = gtk.VSeparator()
         hbox.pack_start(vseparator, False, padding=3)
-        hbox.pack_start(TaskProperties, False)
+        hbox.pack_start(self.TaskProperties, False)
         vseparator = gtk.VSeparator()
         hbox.pack_start(vseparator, False, padding=3)
-        hbox.pack_start(Actions, False)
+        hbox.pack_start(self.actions, False)
 
         # Create a Toolbar
         toolbar = uimanager.get_widget('/ToolBar')
@@ -309,15 +323,25 @@ class MyDotWindow(xdot.DotWindow):
         self.show_all()
 
     def on_url_clicked(self, widget, url, event):
-        self.pid = get_project_id(url)
-        self.tid = get_task_id(url)
-        taskdata = DBConnection.get_data("task", self.tid)
-        self.TaskNameEntry.set_text(taskdata[1])
-        for index, status in enumerate(statuslist):
-            if taskdata[3] == status:
-                self.TaskStatusCombo.set_active(index)
-        self.TaskDueDateEntry.set_text(taskdata[4])
-        self.refresh_actionlist()
+        if self.selectparent and self.tid is not None:
+            DBConnection.toggle_dependency(get_task_id(url), self.tid)
+            self.selectparent = False
+            self.refresh_view()
+        elif self.selectchild and self.tid is not None:
+            DBConnection.toggle_dependency(self.tid, get_task_id(url))
+            self.selectchild = False
+            self.refresh_view()
+        else:
+            self.pid = get_project_id(url)
+            self.tid = get_task_id(url)
+            taskdata = DBConnection.get_data("task", self.tid)
+            self.TaskNameEntry.set_text(taskdata[1])
+            for index, status in enumerate(statuslist):
+                if taskdata[3] == status:
+                    self.TaskStatusCombo.set_active(index)
+            self.TaskDueDateEntry.set_text(taskdata[4])
+            self.refresh_actionlist()
+        self.set_interface_lock(False)
 
     def on_tagtreeview_selection_changed(self, selection):
         tags = []
@@ -484,6 +508,38 @@ class MyDotWindow(xdot.DotWindow):
             DBConnection.remove_action(self.aid)
             self.refresh_actionlist()
             self.refresh_view()
+
+    def toggle_parent_selection(self, widget):
+        if not self.selectparent:
+            self.selectparent = True
+            self.selectchild = False
+            self.set_interface_lock(True)
+        else:
+            self.selectparent = False
+            self.selectchild = False
+            self.set_interface_lock(False)
+        
+
+    def toggle_child_selection(self, widget):
+        if not self.selectchild:
+            self.selectparent = False
+            self.selectchild = True
+            self.set_interface_lock(True)
+        else:
+            self.selectparent = False
+            self.selectchild = False
+            self.set_interface_lock(False)
+
+
+    def set_interface_lock(self, lock):
+        if lock:
+            self.projectproperties.set_sensitive(False)
+            self.actions.set_sensitive(False)
+            self.navbox.set_sensitive(False)
+        else:
+            self.projectproperties.set_sensitive(True)
+            self.actions.set_sensitive(True)
+            self.navbox.set_sensitive(True)
 
 
 if __name__ == "__main__":

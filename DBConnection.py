@@ -170,3 +170,13 @@ def add_action(name, tid, completed, warningdate):
 
 def remove_action(aid):
     c.execute("delete from action where id = %(aid)s" % {"aid": aid})
+
+def toggle_dependency(parent, child):
+    c.execute("select * from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent":parent, "child":child})
+    i = 0
+    for row in c:
+        i += 1
+    if i == 0:
+        c.execute("insert into taskdependency (parentid, childid) values (%(parent)s, %(child)s)" % {"parent":parent, "child":child})
+    else:
+        c.execute("delete from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent":parent, "child":child})
