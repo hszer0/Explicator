@@ -25,22 +25,20 @@ def get_active_text(combobox):
 def show_task_dialog(pid, tid = None):
     taskdialog = gtk.Dialog(title="Task", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
         buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
-    dhbox = gtk.HBox()
 
-    TaskProperties = gtk.VBox()
-    TaskProperties.set_size_request(200, 135)
+    taskdialog.vbox.set_size_request(200, 175)
     label = gtk.Label()
     label.set_alignment(0, 0)
     if tid is None:
         label.set_markup("<big><b>Add Task</b></big>")
     else:
         label.set_markup("<big><b>Edit Task</b></big>")
-    TaskProperties.pack_start(label, False)
+    taskdialog.vbox.pack_start(label, False)
     label = gtk.Label("Name")
     label.set_alignment(0.0, 0.0)
-    TaskProperties.pack_start(label, False)
+    taskdialog.vbox.pack_start(label, False)
     taskdialog.TaskNameEntry = gtk.Entry(max=50)
-    TaskProperties.pack_start(taskdialog.TaskNameEntry, False)
+    taskdialog.vbox.pack_start(taskdialog.TaskNameEntry, False)
     hbox = gtk.HBox()
     vbox = gtk.VBox()
     label = gtk.Label("Status")
@@ -58,9 +56,7 @@ def show_task_dialog(pid, tid = None):
     vbox.pack_start(label)
     vbox.pack_start(taskdialog.TaskDateEntry)
     hbox.pack_start(vbox)
-    TaskProperties.pack_start(hbox, False, padding=5)
-    dhbox.pack_start(TaskProperties)
-    taskdialog.vbox.pack_start(dhbox)
+    taskdialog.vbox.pack_start(hbox, False, padding=5)
 
     if tid is not None:
         taskdata = DBConnection.get_data("task", tid)
@@ -81,37 +77,35 @@ def show_task_dialog(pid, tid = None):
             DBConnection.add_task(pid, taskdialog.TaskNameEntry.get_text(), get_active_text(taskdialog.TaskStatusCombo),
                 taskdialog.TaskDateEntry.get_text())
             taskdialog.destroy()
-            return True
         else:
             DBConnection.update_table("task", "name = '%(name)s', status = '%(status)s', duedate = '%(duedate)s'" %
                 {"name": taskdialog.TaskNameEntry.get_text().replace("'", "''"),
                 "status": get_active_text(taskdialog.TaskStatusCombo),
                 "duedate": taskdialog.TaskDateEntry.get_text()}, tid)
             taskdialog.destroy()
-            return False
+        return True
 
     taskdialog.destroy()
+    return False
 
 
 def show_project_dialog(pid=None):
     projectdialog = gtk.Dialog(title="Project", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
         buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
-    dhbox = gtk.HBox()
 
-    ProjectProperties = gtk.VBox()
-    ProjectProperties.set_size_request(200, 135)
+    projectdialog.vbox.set_size_request(250, 215)
     label = gtk.Label()
     label.set_alignment(0, 0)
     if pid is None:
         label.set_markup("<big><b>Add Project</b></big>")
     else:
         label.set_markup("<big><b>Edit Project</b></big>")
-    ProjectProperties.pack_start(label, False)
+    projectdialog.vbox.pack_start(label, False)
     label = gtk.Label("Name")
     label.set_alignment(0.0, 0.0)
-    ProjectProperties.pack_start(label, False)
+    projectdialog.vbox.pack_start(label, False)
     projectdialog.ProjectNameEntry = gtk.Entry(max=50)
-    ProjectProperties.pack_start(projectdialog.ProjectNameEntry, False)
+    projectdialog.vbox.pack_start(projectdialog.ProjectNameEntry, False)
     hbox = gtk.HBox()
     vbox = gtk.VBox()
     label = gtk.Label("Status")
@@ -129,9 +123,13 @@ def show_project_dialog(pid=None):
     vbox.pack_start(label)
     vbox.pack_start(projectdialog.ProjectPriorityEntry)
     hbox.pack_start(vbox)
-    ProjectProperties.pack_start(hbox, False, padding=5)
-    dhbox.pack_start(ProjectProperties)
-    projectdialog.vbox.pack_start(dhbox)
+    projectdialog.vbox.pack_start(hbox, False, padding=5)
+    label = gtk.Label("Tags (comma seperated)")
+    label.set_alignment(0.0, 0.0)
+    projectdialog.vbox.pack_start(label)
+    projectdialog.ProjectTagEntry = gtk.Entry()
+    projectdialog.vbox.pack_start(projectdialog.ProjectTagEntry, False)
+
 
     if pid is not None:
         projectdata = DBConnection.get_data("project", pid)
@@ -140,6 +138,7 @@ def show_project_dialog(pid=None):
             if projectdata[2] == status:
                 projectdialog.ProjectStatusCombo.set_active(index)
         projectdialog.ProjectPriorityEntry.set_text(str(projectdata[3]))
+        projectdialog.ProjectTagEntry.set_text(",".join(tag[0] for tag in DBConnection.get_tags(pid)))
     else:
         projectdialog.ProjectStatusCombo.set_active(1)
         projectdialog.ProjectPriorityEntry.set_text("100")
@@ -150,13 +149,14 @@ def show_project_dialog(pid=None):
     if response == gtk.RESPONSE_ACCEPT:
         if projectdialog.ProjectPriorityEntry.get_text().isdigit():
             if pid is None:
-                DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(),
+                pid = DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(),
                     get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
             else:
                 DBConnection.update_table("project", "name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {
                     "name": projectdialog.ProjectNameEntry.get_text().replace("'", "''"),
                     "status": get_active_text(projectdialog.ProjectStatusCombo),
                     "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
+            DBConnection.set_tags(pid, projectdialog.ProjectTagEntry.get_text().replace(", ",","))
             projectdialog.destroy()
         return True
     else:
@@ -213,7 +213,7 @@ def show_action_dialog(tid, aid=None):
 
 def show_confirm_dialog(message):
     confirmdialog = gtk.Dialog(title="Confirm", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-        buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
+        buttons=(gtk.STOCK_YES, gtk.RESPONSE_ACCEPT, gtk.STOCK_NO, gtk.RESPONSE_CANCEL))
     label = gtk.Label(message)
     label.set_alignment(0.0, 0.0)
     confirmdialog.vbox.pack_start(label)

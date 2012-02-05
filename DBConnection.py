@@ -9,9 +9,13 @@ def open_connection():
     c.execute("PRAGMA foreign_keys = ON;")
 
 
-def get_tags():
-    c.execute("select tag from tag")
-    return c
+def get_tags(pid = None):
+    tg = conn.cursor()
+    if pid is None:
+        tg.execute("select distinct tag from tag")
+    else:
+        tg.execute("select distinct tag from tag where pid = %(pid)s" % {"pid":pid})
+    return tg
 
 
 def get_projects(tags):
@@ -89,7 +93,7 @@ def generate_dotcode(projectlist=None):
         """
     projects = []
     for project in projectlist:
-        projects.append(str(project))
+        projects.append(str(project).replace('"',r'\"'))
 
     c.execute("select * from task where pid in (%(projects)s)" % {"projects": ",".join(projects)})
     for row in c:
@@ -100,7 +104,7 @@ def generate_dotcode(projectlist=None):
             color = %(color)s
             fontcolor = %(color)s
         ]
-        """ % {"tasks": get_actions(row[0]), "name": row[1], "status": row[3], "due": row[4],
+        """ % {"tasks": get_actions(row[0]).replace('"',r'\"'), "name": row[1].replace('"',r'\"'), "status": row[3], "due": row[4],
                "pid_tid": "P" + str(row[2]) + "T" + str(row[0]), "color": get_color_from_status(row[3])}
 
     for pid in projectlist:
@@ -136,6 +140,9 @@ def add_project(name, status, priority):
     c.execute(
         "insert into project (name, status, priority) values ('%(name)s', '%(status)s', %(priority)s)" %
         {"name": name.replace("'", "''"), "status": status, "priority": priority})
+    c.execute("select max(id) from project")
+    row = c.fetchone()
+    return row[0]
 
 
 def add_task(pid, name, status, date):
@@ -180,3 +187,8 @@ def toggle_dependency(parent, child):
         c.execute("insert into taskdependency (parentid, childid) values (%(parent)s, %(child)s)" % {"parent":parent, "child":child})
     else:
         c.execute("delete from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent":parent, "child":child})
+
+def set_tags(pid, tags):
+    c.execute("delete from tag where pid = %(pid)s" % {"pid":pid})
+    for tag in tags.split(","):
+        c.execute("insert into tag (pid, tag) values (%(pid)s, '%(tag)s')" % {"pid":pid, "tag":tag})

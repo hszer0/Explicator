@@ -253,10 +253,13 @@ class MyDotWindow(xdot.DotWindow):
         header.pack_start(label)
         btnaddtag = gtk.Button('+')
         btnaddtag.set_size_request(20, 0)
+        btnaddtag.set_sensitive(False)
         btnremtag = gtk.Button('-')
         btnremtag.set_size_request(20, 0)
+        btnremtag.set_sensitive(False)
         btnedttag = gtk.Button('...')
         btnedttag.set_size_request(20, 0)
+        btnedttag.set_sensitive(False)
         header.pack_start(btnaddtag, False)
         header.pack_start(btnremtag, False)
         header.pack_start(btnedttag, False)
@@ -445,29 +448,31 @@ class MyDotWindow(xdot.DotWindow):
         self.aid = None
 
     def add_project(self, widget):
-        dialog.show_project_dialog()
-        selection = self.tagtree.get_selection()
-        self.on_tagtreeview_selection_changed(selection)
-        self.clear_actions()
-        self.clear_task_properties()
-
-    def edit_project(self, widget):
-        if self.pid is not None:
-            dialog.show_project_dialog(self.pid)
+        if dialog.show_project_dialog():
             selection = self.tagtree.get_selection()
+            self.refresh_tags()
             self.on_tagtreeview_selection_changed(selection)
-
-    def add_task(self, widget):
-        if self.pid is not None:
-            dialog.show_task_dialog(self.pid)
-            self.refresh_view()
             self.clear_actions()
             self.clear_task_properties()
 
+    def edit_project(self, widget):
+        if self.pid is not None:
+            if dialog.show_project_dialog(self.pid):
+                selection = self.tagtree.get_selection()
+                self.refresh_tags()
+                self.on_tagtreeview_selection_changed(selection)
+
+    def add_task(self, widget):
+        if self.pid is not None:
+            if dialog.show_task_dialog(self.pid):
+                self.refresh_view()
+                self.clear_actions()
+                self.clear_task_properties()
+
     def edit_task(self, widget):
         if self.pid is not None and self.tid is not None:
-            dialog.show_task_dialog(self.pid, self.tid)
-            self.refresh_view()
+            if dialog.show_task_dialog(self.pid, self.tid):
+                self.refresh_view()
 
     def remove_task(self, widget):
         taskdata = DBConnection.get_data("task", self.tid)
@@ -493,15 +498,15 @@ class MyDotWindow(xdot.DotWindow):
 
     def add_action(self, widget):
         if self.tid is not None:
-            dialog.show_action_dialog(self.tid)
-            self.refresh_actionlist()
-            self.refresh_view()
+            if dialog.show_action_dialog(self.tid):
+                self.refresh_actionlist()
+                self.refresh_view()
 
     def edit_action(self, widget):
         if self.tid is not None:
-            dialog.show_action_dialog(self.tid, self.aid)
-            self.refresh_actionlist()
-            self.refresh_view()
+            if dialog.show_action_dialog(self.tid, self.aid):
+                self.refresh_actionlist()
+                self.refresh_view()
 
     def remove_action(self, widget):
         if self.aid is not None:
