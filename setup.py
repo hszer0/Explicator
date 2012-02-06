@@ -1,9 +1,13 @@
-from distutils.core import setup
+import sys
 
-setup(name='Explicator',
-    version='0.1.1',
-    author='Patrick Liem',
-    author_email='hszer0@gmail.com',
-    packages=['tools'],
-    package_data={'tools'},
-    scripts=['main.py'])
+from cx_Freeze import setup, Executable
+
+base = None
+if sys.platform == "win32":
+    base = "Win32GUI"
+
+setup (
+    name = 'Explicator',
+    version = "0.0.1",
+    description = "",
+    executables = [Executable("main.py", base = base)])

@@ -1,5 +1,5 @@
 import sqlite3
-from tools.globals import *
+from globals import *
 
 conn = sqlite3.connect("explicator.db")
 conn.isolation_level = None

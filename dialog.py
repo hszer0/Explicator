@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from tools.globals import *
+from globals import *
 from tools import DBConnection
 
 try:

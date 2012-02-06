@@ -1,19 +1,10 @@
 #!/usr/bin/env python
-import sys
 import os
-from tools.globals import *
-from tools import DBConnection, dialog, xdot
-
-try:
-    import pygtk
-
-    pygtk.require("2.0")
-except:
-    pass
-try:
-    import gtk
-except:
-    sys.exit(1)
+import DBConnection
+import dialog
+from globals import *
+import gtk
+import xdot
 
 os.environ['PATH'] += ";gtk/lib;gtk/bin"
 
