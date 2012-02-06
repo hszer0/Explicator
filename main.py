@@ -360,7 +360,7 @@ class MyDotWindow(xdot.DotWindow):
             iter = model.get_iter(row)
             self.aid = model.get_value(iter, 0)
 
-    def on_projecttreeview_selection_changed(self, selection):
+    def on_projecttreeview_selection_changed(self, selection, clear=True):
         projects = []
         (model, rownrs) = selection.get_selected_rows()
         for row in rownrs:
@@ -373,6 +373,9 @@ class MyDotWindow(xdot.DotWindow):
             self.fill_project_properties()
         else:
             self.clear_project_properties()
+        if clear:
+            self.clear_task_properties()
+            self.clear_actions()
 
     def fill_project_properties(self):
         projectdata = DBConnection.get_data("project", self.pid)
@@ -392,7 +395,7 @@ class MyDotWindow(xdot.DotWindow):
         if resize:
             x, y = self.widget.get_current_pos()
             z = self.widget.zoom_ratio
-        self.on_projecttreeview_selection_changed(self.projecttree.get_selection())
+        self.on_projecttreeview_selection_changed(self.projecttree.get_selection(), False)
         if resize:
             self.widget.zoom_ratio = z
             self.widget.set_current_pos(x, y)
@@ -419,29 +422,32 @@ class MyDotWindow(xdot.DotWindow):
         window.set_dotcode(dotcode)
 
     def on_status_change_task(self, combobox):
-        taskdata = DBConnection.get_data("task", self.tid)
-        if taskdata[3] != get_active_text(combobox):
-            DBConnection.update_table("task", "status = '%(status)s'" % {"status": get_active_text(combobox)}, self.tid)
-            self.refresh_view()
+        if self.tid is not None:
+            taskdata = DBConnection.get_data("task", self.tid)
+            if taskdata[3] != get_active_text(combobox):
+                DBConnection.update_table("task", "status = '%(status)s'" % {"status": get_active_text(combobox)},
+                    self.tid)
+                self.refresh_view()
 
     def on_status_change_project(self, combobox):
-        taskdata = DBConnection.get_data("project", self.pid)
-        if taskdata[2] != get_active_text(combobox):
-            DBConnection.update_table("project", "status = '%(status)s'" %
-                                                 {"status": get_active_text(combobox)}, self.pid)
+        if self.pid is not None:
+            taskdata = DBConnection.get_data("project", self.pid)
+            if taskdata[2] != get_active_text(combobox):
+                DBConnection.update_table("project", "status = '%(status)s'" %
+                                                     {"status": get_active_text(combobox)}, self.pid)
 
 
     def clear_project_properties(self):
+        self.pid = None
         self.ProjectNameEntry.set_text("")
         self.ProjectPriorityEntry.set_text("")
         self.ProjectStatusCombo.set_active(-1)
-        self.pid = None
 
     def clear_task_properties(self):
+        self.tid = None
         self.TaskDueDateEntry.set_text("")
         self.TaskNameEntry.set_text("")
         self.TaskStatusCombo.set_active(-1)
-        self.tid = None
 
     def clear_actions(self):
         self.actionlist.clear()
@@ -465,7 +471,7 @@ class MyDotWindow(xdot.DotWindow):
     def add_task(self, widget):
         if self.pid is not None:
             if dialog.show_task_dialog(self.pid):
-                self.refresh_view()
+                self.refresh_view(False)
                 self.clear_actions()
                 self.clear_task_properties()
 
@@ -485,16 +491,17 @@ class MyDotWindow(xdot.DotWindow):
             self.clear_task_properties()
 
     def remove_project(self, widget):
-        projectdata = DBConnection.get_data("project", self.pid)
-        if dialog.show_confirm_dialog(
-            "Are you sure you want to delete '%(projectname)s'? All items within the project will be removed." % {
-                "projectname": projectdata[1]}):
-            DBConnection.remove_project(self.pid)
-            selection = self.tagtree.get_selection()
-            self.on_tagtreeview_selection_changed(selection)
-            self.refresh_tags()
-            self.clear_actions()
-            self.clear_task_properties()
+        if self.pid is not None:
+            projectdata = DBConnection.get_data("project", self.pid)
+            if dialog.show_confirm_dialog(
+                "Are you sure you want to delete '%(projectname)s'? All items within the project will be removed." % {
+                    "projectname": projectdata[1]}):
+                DBConnection.remove_project(self.pid)
+                selection = self.tagtree.get_selection()
+                self.on_tagtreeview_selection_changed(selection)
+                self.refresh_tags()
+                self.clear_actions()
+                self.clear_task_properties()
 
     def add_action(self, widget):
         if self.tid is not None:
@@ -523,7 +530,7 @@ class MyDotWindow(xdot.DotWindow):
             self.selectparent = False
             self.selectchild = False
             self.set_interface_lock(False)
-        
+
 
     def toggle_child_selection(self, widget):
         if not self.selectchild:
