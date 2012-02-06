@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
-import DBConnection
-import dialog
-from globals import *
+import os
+from tools.globals import *
+from tools import DBConnection, dialog, xdot
 
 try:
     import pygtk
@@ -14,7 +14,8 @@ try:
     import gtk
 except:
     sys.exit(1)
-import xdot
+
+os.environ['PATH'] += ";gtk/lib;gtk/bin"
 
 def get_active_text(combobox):
     model = combobox.get_model()
