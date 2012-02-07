@@ -1,5 +1,11 @@
 import sqlite3
+import shutil
 from globals import *
+
+try:
+    open("explicator.db").close()
+except IOError:
+    shutil.copy("tutorial.db", "explicator.db")
 
 conn = sqlite3.connect("explicator.db")
 conn.isolation_level = None
