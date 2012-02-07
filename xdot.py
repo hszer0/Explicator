@@ -1448,13 +1448,18 @@ class DotWidget(gtk.DrawingArea):
     def run_filter(self, dotcode):
         if not self.filter:
             return dotcode
+        startupinfo = None
+        if os.name == 'nt':
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess._subprocess.STARTF_USESHOWWINDOW
         p = subprocess.Popen(
             [self.filter, '-Txdot'],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=False,
-            universal_newlines=True
+            universal_newlines=True,
+            startupinfo = startupinfo
         )
         xdotcode, error = p.communicate(dotcode)
         sys.stderr.write(error)
@@ -1697,10 +1702,10 @@ class DotWidget(gtk.DrawingArea):
             url = self.get_url(x, y)
             if url is not None:
                 self.emit('clicked', unicode(url.url), event)
-            else:
-                jump = self.get_jump(x, y)
-                if jump is not None:
-                    self.animate_to(jump.x, jump.y)
+#            else:
+#                jump = self.get_jump(x, y)
+#                if jump is not None:
+#                    self.animate_to(jump.x, jump.y)
 
             return True
         if event.button == 1 or event.button == 2:
@@ -1765,7 +1770,7 @@ class DotWindow(gtk.Window):
     </ui>
     '''
 
-    base_title = 'Dot Viewer'
+    base_title = 'Explicator'
 
     def __init__(self):
         gtk.Window.__init__(self)
