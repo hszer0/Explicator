@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 from globals import *
-from tools import DBConnection
+import DBConnection
 
 try:
     import pygtk

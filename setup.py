@@ -10,4 +10,4 @@ setup (
     name = 'Explicator',
     version = "0.0.1",
     description = "",
-    executables = [Executable("main.py", base = base)])
+    executables = [Executable("explicator.py", base = base)])

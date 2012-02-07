@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-import os
 import DBConnection
 import dialog
 from globals import *
 import gtk
 import xdot
-
-os.environ['PATH'] += ";gtk/lib;gtk/bin"
 
 def get_active_text(combobox):
     model = combobox.get_model()
@@ -32,7 +29,6 @@ class MyDotWindow(xdot.DotWindow):
         gtk.Window.__init__(self)
         self.graph = xdot.Graph()
         window = self
-        window.set_title('Explicator')
         window.set_default_size(800, 600)
         window.set_position(gtk.WIN_POS_CENTER)
         DBConnection.open_connection()
@@ -548,5 +544,6 @@ class MyDotWindow(xdot.DotWindow):
 
 if __name__ == "__main__":
     window = MyDotWindow()
+    window.set_title("Explicator")
     window.connect('destroy', gtk.main_quit)
     gtk.main()
