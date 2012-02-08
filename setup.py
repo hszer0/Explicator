@@ -1,13 +1,30 @@
-import sys
-
 from cx_Freeze import setup, Executable
 
-base = None
-if sys.platform == "win32":
-    base = "Win32GUI"
+target = Executable(
 
-setup (
+    script = "explicator.py",
+    base = 'Win32GUI',
+    #targetDir = r"dist",
+    targetName = "explicator.exe",
+    compress = True,
+    copyDependentFiles = True,
+)
+
+
+includefiles = ['README', 'tutorial.db']
+includes = ['cairo','pango','pangocairo','gobject','atk','gio','gtk']
+excludes = ['_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger',
+            'pywin.debugger.dbgcon', 'pywin.dialogs', 'tcl',
+            'Tkconstants', 'Tkinter']
+packages = []
+path = []
+
+setup(
     name = 'Explicator',
-    version = "0.0.1",
-    description = "",
-    executables = [Executable("explicator.py", base = base)])
+    version = '0.1.2',
+    description = 'Planning tool',
+    author = 'Patrick Liem',
+    author_email = 'hszer0@gmail.com',
+    options = {'build_exe': {'excludes':excludes,'packages':packages,'include_files':includefiles, 'path':path}},
+    executables = [target]
+)
