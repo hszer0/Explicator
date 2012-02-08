@@ -1,13 +1,22 @@
-import sqlite3
-import shutil
+import sqlite3, shutil, ConfigParser
 from globals import *
 
 try:
-    open("explicator.db").close()
+    open("settings.cfg").close()
 except IOError:
-    shutil.copy("tutorial.db", "explicator.db")
+    shutil.copy("default.cfg", "settings.cfg")
 
-conn = sqlite3.connect("explicator.db")
+config = ConfigParser.ConfigParser()
+config.readfp(open("settings.cfg"))
+dbpath = config.get('Database', 'Path')
+dbpath = dbpath.replace("\\", "\\\\")
+
+try:
+    open(dbpath).close()
+except IOError:
+    shutil.copy("tutorial.db", dbpath)
+
+conn = sqlite3.connect(dbpath)
 conn.isolation_level = None
 c = conn.cursor()
 
