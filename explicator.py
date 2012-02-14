@@ -313,6 +313,7 @@ class MyDotWindow(xdot.DotWindow):
         else:
             self.pid = get_project_id(url)
             self.tid = get_task_id(url)
+            self.aid = None
             taskdata = DBConnection.get_data("task", self.tid)
             self.TaskNameEntry.set_text(taskdata[1])
             for index, status in enumerate(statuslist):
@@ -323,12 +324,7 @@ class MyDotWindow(xdot.DotWindow):
         self.set_interface_lock(False)
 
     def on_tagtreeview_selection_changed(self, selection):
-        tags = []
-        (model, rownrs) = selection.get_selected_rows()
-        for row in rownrs:
-            iter = model.get_iter(row)
-            tags.append("'" + model.get_value(iter, 0) + "'")
-        self.refresh_projects(tags)
+        self.refresh_projects(self.get_selection_strings(selection))
 
     def on_actiontreeview_selection_changed(self, selection):
         (model, rownrs) = selection.get_selected_rows()
@@ -377,17 +373,26 @@ class MyDotWindow(xdot.DotWindow):
             self.widget.set_current_pos(x, y)
 
     def refresh_tags(self):
+        tags = self.get_selection_strings(self.tagtree.get_selection())
         self.taglist.clear()
         for row in DBConnection.get_tags():
             self.taglist.append([row[0], ])
+        selection = self.tagtree.get_selection()
+        self.tagtree.get_model().foreach(self.set_selection, (tags, selection))
+
+    def set_selection(self, model, path, iter, data):
+        tree_iter = model.get_iter(path)
+        if model.get_value(tree_iter, 0) in data[0]:
+            data[1].select_path(path)
 
     def refresh_projects(self, tags=None):
+        projects = self.get_selection_strings(self.projecttree.get_selection())
         self.projectlist.clear()
         for row in DBConnection.get_projects(tags):
             self.projectlist.append([row[0], row[1]])
-        self.clear_project_properties()
-        self.clear_task_properties()
-        self.clear_actions()
+        selection = self.projecttree.get_selection()
+        self.projecttree.get_model().foreach(self.set_selection, (projects, selection))
+
 
     def refresh_actionlist(self):
         self.actionlist.clear()
@@ -431,9 +436,7 @@ class MyDotWindow(xdot.DotWindow):
 
     def add_project(self, widget):
         if dialog.show_project_dialog():
-            selection = self.tagtree.get_selection()
             self.refresh_tags()
-            self.on_tagtreeview_selection_changed(selection)
             self.clear_actions()
             self.clear_task_properties()
 
@@ -528,6 +531,14 @@ class MyDotWindow(xdot.DotWindow):
             self.projectproperties.set_sensitive(True)
             self.actions.set_sensitive(True)
             self.navbox.set_sensitive(True)
+
+    def get_selection_strings(self, selection):
+        strings = []
+        (model, rownrs) = selection.get_selected_rows()
+        for row in rownrs:
+            iter = model.get_iter(row)
+            strings.append(model.get_value(iter, 0))
+        return strings
 
 
 if __name__ == "__main__":

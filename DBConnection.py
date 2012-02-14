@@ -27,14 +27,17 @@ def open_connection():
 def get_tags(pid = None):
     tg = conn.cursor()
     if pid is None:
-        tg.execute("select distinct tag from tag")
+        tg.execute("select distinct tag from tag order by tag")
     else:
-        tg.execute("select distinct tag from tag where pid = %(pid)s" % {"pid":pid})
+        tg.execute("select distinct tag from tag where pid = %(pid)s order by tag" % {"pid":pid})
     return tg
 
 
-def get_projects(tags):
-    if tags:
+def get_projects(taglist):
+    if taglist:
+        tags = []
+        for tag in taglist:
+            tags.append("'" + tag + "'")
         c.execute("select id, name from project where id in (select pid from tag where tag in (" + ",".join(
             tags) + ")) order by name")
     else:
