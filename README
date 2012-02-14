@@ -2,6 +2,6 @@ Explicator is a planning tool to keep track of all your projects based on priori
 It uses the basics of a network planning.
 
 The application is written in Python with PyCharm (http://www.jetbrains.com/pycharm/)
-Visualisation  of the graph is done with XDot (http://code.google.com/p/jrfonseca/wiki/XDot)
+Visualisation of the graph is done with XDot (http://code.google.com/p/jrfonseca/wiki/XDot)
 User interface is made in PyGTK (http://www.pygtk.org/)
 Uses sqlite3 to store data (http://www.sqlite.org/)
