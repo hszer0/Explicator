@@ -4,7 +4,6 @@ target = Executable(
 
     script = "explicator.py",
     base = 'Win32GUI',
-    #targetDir = r"dist",
     targetName = "explicator.exe",
     compress = True,
     copyDependentFiles = True,
