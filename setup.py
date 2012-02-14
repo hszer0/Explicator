@@ -10,7 +10,7 @@ target = Executable(
 )
 
 
-includefiles = ['README', 'tutorial.db']
+includefiles = ['README', 'tutorial.db', 'default.cfg']
 includes = ['cairo','pango','pangocairo','gobject','atk','gio','gtk']
 excludes = ['_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger',
             'pywin.debugger.dbgcon', 'pywin.dialogs', 'tcl',
