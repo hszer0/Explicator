@@ -208,9 +208,13 @@ class MyDotWindow(xdot.DotWindow):
         self.tooltips.set_tip(btnedtact, "Edit Action")
         btnedtact.add(image)
         btnedtact.connect('clicked', self.edit_action)
+        btncnvact = gtk.Button('To Task')
+        self.tooltips.set_tip(btncnvact, "Convert Action to Task")
+        btncnvact.connect('clicked', self.convert_action_to_task)
         header.pack_start(btnaddact, False)
         header.pack_start(btnremact, False)
         header.pack_start(btnedtact, False)
+        header.pack_start(btncnvact, False)
         self.actions.pack_start(header, False)
         scroller = gtk.ScrolledWindow()
         scroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
@@ -567,6 +571,12 @@ class MyDotWindow(xdot.DotWindow):
             iter = model.get_iter(row)
             strings.append(model.get_value(iter, 0))
         return strings
+
+    def convert_action_to_task(self, widget):
+        if self.pid is not None and self.aid is not None:
+            actiondata = DBConnection.get_data("action", self.aid)
+            DBConnection.add_task(self.pid, actiondata[1], "available", "1901-01-01")
+            self.remove_action(widget)
 
 
 if __name__ == "__main__":
