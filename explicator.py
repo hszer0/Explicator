@@ -252,7 +252,7 @@ class MyDotWindow(xdot.DotWindow):
 
         #set Tag/Project box
         self.navbox = gtk.VBox()
-        self.navbox.set_size_request(150, 300)
+        self.navbox.set_size_request(175, 300)
         header = gtk.HBox()
         label = gtk.Label()
         label.set_alignment(0, 0)
