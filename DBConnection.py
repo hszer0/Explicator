@@ -16,6 +16,8 @@ try:
 except IOError:
     shutil.copy("tutorial.db", dbpath)
 
+#dbpath = "tutorial.db"
+
 conn = sqlite3.connect(dbpath)
 conn.isolation_level = None
 c = conn.cursor()

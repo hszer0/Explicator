@@ -38,6 +38,7 @@ def show_task_dialog(pid, tid = None):
     label.set_alignment(0.0, 0.0)
     taskdialog.vbox.pack_start(label, False)
     taskdialog.TaskNameEntry = gtk.Entry(max=50)
+    taskdialog.TaskNameEntry.set_activates_default(True)
     taskdialog.vbox.pack_start(taskdialog.TaskNameEntry, False)
     hbox = gtk.HBox()
     vbox = gtk.VBox()
@@ -49,6 +50,7 @@ def show_task_dialog(pid, tid = None):
         taskdialog.TaskStatusCombo.append_text(status)
     vbox.pack_start(taskdialog.TaskStatusCombo)
     taskdialog.TaskDateEntry = gtk.Entry(max=10)
+    taskdialog.TaskDateEntry.set_activates_default(True)
     hbox.pack_start(vbox, False)
     vbox = gtk.VBox()
     label = gtk.Label("Due Date")
@@ -57,6 +59,7 @@ def show_task_dialog(pid, tid = None):
     vbox.pack_start(taskdialog.TaskDateEntry)
     hbox.pack_start(vbox)
     taskdialog.vbox.pack_start(hbox, False, padding=5)
+    taskdialog.set_default_response(gtk.RESPONSE_ACCEPT)
 
     if tid is not None:
         taskdata = DBConnection.get_data("task", tid)
@@ -105,6 +108,7 @@ def show_project_dialog(pid=None):
     label.set_alignment(0.0, 0.0)
     projectdialog.vbox.pack_start(label, False)
     projectdialog.ProjectNameEntry = gtk.Entry(max=50)
+    projectdialog.ProjectNameEntry.set_activates_default(True)
     projectdialog.vbox.pack_start(projectdialog.ProjectNameEntry, False)
     hbox = gtk.HBox()
     vbox = gtk.VBox()
@@ -124,11 +128,13 @@ def show_project_dialog(pid=None):
     vbox.pack_start(projectdialog.ProjectPriorityEntry)
     hbox.pack_start(vbox)
     projectdialog.vbox.pack_start(hbox, False, padding=5)
-    label = gtk.Label("Tags (comma seperated)")
+    label = gtk.Label("Categories (comma seperated)")
     label.set_alignment(0.0, 0.0)
     projectdialog.vbox.pack_start(label)
     projectdialog.ProjectTagEntry = gtk.Entry()
+    projectdialog.ProjectTagEntry.set_activates_default(True)
     projectdialog.vbox.pack_start(projectdialog.ProjectTagEntry, False)
+    projectdialog.set_default_response(gtk.RESPONSE_ACCEPT)
 
 
     if pid is not None:
@@ -180,6 +186,7 @@ def show_action_dialog(tid, aid=None):
     label.set_alignment(0.0, 0.0)
     actiondialog.vbox.pack_start(label, False)
     actiondialog.actionentry = gtk.Entry(max=50)
+    actiondialog.actionentry.set_activates_default(True)
     actiondialog.vbox.pack_start(actiondialog.actionentry, False)
 #    label = gtk.Label("Warning Date")
 #    label.set_alignment(0.0, 0.0)
@@ -187,6 +194,7 @@ def show_action_dialog(tid, aid=None):
 #    actiondialog.warningentry = gtk.Entry(max=50)
 #    actiondialog.vbox.pack_start(actiondialog.warningentry, False)
     actiondialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+    actiondialog.set_default_response(gtk.RESPONSE_ACCEPT)
 
     if aid is not None:
         actiondata = DBConnection.get_data("action", aid)
@@ -219,6 +227,7 @@ def show_confirm_dialog(message):
     confirmdialog.vbox.pack_start(label)
     confirmdialog.set_position(gtk.WIN_POS_CENTER)
     confirmdialog.show_all()
+    confirmdialog.set_default_response(gtk.RESPONSE_ACCEPT)
     response = confirmdialog.run()
     confirmdialog.destroy()
     return response == gtk.RESPONSE_ACCEPT
