@@ -6,6 +6,7 @@
 #define MyAppPublisher "Insidious Pigeon"
 #define MyAppURL "http://www.insidiouspigeon.nl"
 #define MyAppExeName "explicator.exe"
+#define MyAppOutputName "Explicator_Installer_0.1.3"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -22,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputBaseFilename=setup
+OutputBaseFilename={#MyAppOutputName}
 Compression=lzma
 SolidCompression=yes
 
@@ -33,51 +34,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\Source\Explicator\build\exe.win32-2.7\explicator.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\_hashlib.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\_sqlite3.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\atk.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\bz2.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\cairo._cairo.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\default.cfg"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\freetype6.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\gdiplus.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\gio._gio.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\glib._glib.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\gobject._gobject.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\gtk._gtk.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\intl.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libatk-1.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libcairo-2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libexpat-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libfontconfig-1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgdk_pixbuf-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgdk-win32-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgio-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libglib-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgmodule-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgobject-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgthread-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libgtk-win32-2.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libpango-1.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libpangocairo-1.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libpangoft2-1.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libpangowin32-1.0-0.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\libpng14-14.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\library.zip"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\pango.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\pangocairo.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\python27.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\README"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\select.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\tutorial.db"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\unicodedata.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Source\Explicator\build\exe.win32-2.7\data\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\Source\Explicator\build\exe.win32-2.7\etc\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\Source\Explicator\build\exe.win32-2.7\lib\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\Source\Explicator\build\exe.win32-2.7\share\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Source\Explicator\build\exe.win32-2.7\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
