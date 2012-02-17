@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Explicator"
-#define MyAppVersion "0.1.2"
+#define MyAppVersion "0.1.3"
 #define MyAppPublisher "Insidious Pigeon"
 #define MyAppURL "http://www.insidiouspigeon.nl"
 #define MyAppExeName "explicator.exe"
@@ -74,6 +74,10 @@ Source: "D:\Source\Explicator\build\exe.win32-2.7\sqlite3.dll"; DestDir: "{app}"
 Source: "D:\Source\Explicator\build\exe.win32-2.7\tutorial.db"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Source\Explicator\build\exe.win32-2.7\unicodedata.pyd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Source\Explicator\build\exe.win32-2.7\zlib1.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\Source\Explicator\build\exe.win32-2.7\data\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Source\Explicator\build\exe.win32-2.7\etc\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Source\Explicator\build\exe.win32-2.7\lib\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Source\Explicator\build\exe.win32-2.7\share\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
