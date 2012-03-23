@@ -348,21 +348,18 @@ class MyDotWindow(xdot.DotWindow):
                     set_released = False
             if not set_released:
                 DBConnection.update_table("task", "status = '%(status)s'" % {"status":hold}, tid)
+        self.cascade(tid)
 
     def on_url_clicked(self, widget, url, event):
         if self.selectparent and self.tid is not None:
             DBConnection.toggle_dependency(get_task_id(url), self.tid)
             self.selectparent = False
-            self.check_dependency(self.tid)
-            self.cascade(self.tid)
-            self.cascade(get_task_id(url))
             self.refresh_view()
         elif self.selectchild and self.tid is not None:
             DBConnection.toggle_dependency(self.tid, get_task_id(url))
             self.selectchild = False
+            self.check_dependency(self.tid)
             self.check_dependency(get_task_id(url))
-            self.cascade(self.tid)
-            self.cascade(get_task_id(url))
             self.refresh_view()
         else:
             self.pid = get_project_id(url)
@@ -420,6 +417,7 @@ class MyDotWindow(xdot.DotWindow):
                 completed_all = False
         if completed_all:
             DBConnection.update_table("task", "status = '%(status)s'" % {"status":done}, self.tid)
+            self.check_dependency(self.tid)
         elif initial_status == done:
             DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, self.tid)
             self.check_dependency(self.tid)
