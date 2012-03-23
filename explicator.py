@@ -52,12 +52,12 @@ class MyDotWindow(xdot.DotWindow):
         self.tagtree.set_headers_visible(False)
 
         #Treeview with Projects
-        self.projectlist = gtk.ListStore(int, str)
+        self.projectlist = gtk.ListStore(int, str, str)
         self.projecttree = gtk.TreeView(self.projectlist)
         self.projecttree.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
         self.projecttree.set_enable_search(True)
         self.projecttree.set_search_column(1)
-        self.projecttree.append_column(gtk.TreeViewColumn("Projects", gtk.CellRendererText(), text=1))
+        self.projecttree.append_column(gtk.TreeViewColumn("Projects", gtk.CellRendererText(), text=1, foreground=2))
         self.projecttree.get_selection().connect('changed', lambda s: self.on_projecttreeview_selection_changed(s))
         self.projecttree.set_headers_visible(False)
 
@@ -333,14 +333,36 @@ class MyDotWindow(xdot.DotWindow):
         self.widget.connect('clicked', self.on_url_clicked)
         self.show_all()
 
+    def check_dependency(self, tid):
+        if DBConnection.get_task_status(tid) == hold:
+            set_released = True
+            for status in DBConnection.get_status_all_parents(tid):
+                if DBConnection.get_task_status(status) != done:
+                    set_released = False
+            if set_released:
+                DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, tid)
+        elif DBConnection.get_task_status(tid) == released:
+            set_released = True
+            for status in DBConnection.get_status_all_parents(tid):
+                if DBConnection.get_task_status(status) != done:
+                    set_released = False
+            if not set_released:
+                DBConnection.update_table("task", "status = '%(status)s'" % {"status":hold}, tid)
+
     def on_url_clicked(self, widget, url, event):
         if self.selectparent and self.tid is not None:
             DBConnection.toggle_dependency(get_task_id(url), self.tid)
             self.selectparent = False
+            self.check_dependency(self.tid)
+            self.cascade(self.tid)
+            self.cascade(get_task_id(url))
             self.refresh_view()
         elif self.selectchild and self.tid is not None:
             DBConnection.toggle_dependency(self.tid, get_task_id(url))
             self.selectchild = False
+            self.check_dependency(get_task_id(url))
+            self.cascade(self.tid)
+            self.cascade(get_task_id(url))
             self.refresh_view()
         else:
             self.pid = get_project_id(url)
@@ -389,9 +411,18 @@ class MyDotWindow(xdot.DotWindow):
                 self.ProjectStatusCombo.set_active(index)
         self.ProjectPriorityEntry.set_text(str(projectdata[3]))
 
-
     def on_action_toggled(self, cell, path, model):
         DBConnection.toggle_action(model[path][0])
+        initial_status = DBConnection.get_task_status(self.tid)
+        completed_all = True
+        for row in DBConnection.get_actionlist(self.tid):
+            if not row[3]:
+                completed_all = False
+        if completed_all:
+            DBConnection.update_table("task", "status = '%(status)s'" % {"status":done}, self.tid)
+        elif initial_status == done:
+            DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, self.tid)
+            self.check_dependency(self.tid)
         self.refresh_actionlist()
         self.refresh_view()
 
@@ -421,10 +452,9 @@ class MyDotWindow(xdot.DotWindow):
         projects = self.get_selection_strings(self.projecttree.get_selection())
         self.projectlist.clear()
         for row in DBConnection.get_projects(tags):
-            self.projectlist.append([row[0], row[1]])
+            self.projectlist.append([row[0], row[1], get_color_from_status(row[2])])
         selection = self.projecttree.get_selection()
         self.projecttree.get_model().foreach(self.set_selection, (projects, selection))
-
 
     def refresh_actionlist(self):
         self.actionlist.clear()
@@ -440,6 +470,7 @@ class MyDotWindow(xdot.DotWindow):
             if taskdata[3] != get_active_text(combobox):
                 DBConnection.update_table("task", "status = '%(status)s'" % {"status": get_active_text(combobox)},
                     self.tid)
+                self.cascade(self.tid)
                 self.refresh_view()
 
     def on_status_change_project(self, combobox):
@@ -483,12 +514,13 @@ class MyDotWindow(xdot.DotWindow):
         if self.pid is not None:
             if dialog.show_task_dialog(self.pid):
                 self.refresh_view(False)
-                self.clear_actions()
                 self.clear_task_properties()
 
     def edit_task(self, widget):
         if self.pid is not None and self.tid is not None:
             if dialog.show_task_dialog(self.pid, self.tid):
+                self.cascade(self.tid)
+                self.cascade(self.tid)
                 self.refresh_view()
 
     def remove_task(self, widget):
@@ -497,6 +529,8 @@ class MyDotWindow(xdot.DotWindow):
             "Are you sure you want to delete '%(taskname)s'? All dependencies and actions for this task will be removed." % {
                 "taskname": taskdata[1]}):
             DBConnection.remove_task(self.tid)
+            for child in DBConnection.get_childs(self.tid):
+                self.check_dependency(child)
             self.refresh_view()
             self.clear_actions()
             self.clear_task_properties()
@@ -578,6 +612,25 @@ class MyDotWindow(xdot.DotWindow):
             DBConnection.add_task(self.pid, actiondata[1], "available", "1901-01-01")
             self.remove_action(widget)
 
+    def cascade(self, tid, trace = None):
+        if trace is None:
+            trace = []
+        if tid not in trace:
+            trace.append(tid)
+            for child in DBConnection.get_childs(tid):
+                parent_status = DBConnection.get_task_status(tid)
+                child_status = DBConnection.get_task_status(child)
+                if child_status == hold and parent_status == release_trigger :
+                    valid_update = True
+                    for status in DBConnection.get_status_all_parents(child):
+                        if DBConnection.get_task_status(status) != done:
+                            valid_update = False
+                    if valid_update:
+                        DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, child)
+                        self.cascade(child, trace)
+                elif child_status not in (ignore, done) and parent_status != release_trigger :
+                    DBConnection.update_table("task", "status = '%(status)s'" % {"status":hold}, child)
+                    self.cascade(child, trace)
 
 if __name__ == "__main__":
     window = MyDotWindow()

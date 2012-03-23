@@ -36,16 +36,22 @@ def get_tags(pid = None):
 
 
 def get_projects(taglist):
+    query = []
     if taglist:
         tags = []
         for tag in taglist:
             tags.append("'" + tag + "'")
-        c.execute("select id, name from project where id in (select pid from tag where tag in (" + ",".join(
-            tags) + ")) order by name")
+        for status in statuslist:
+            query.append("""select id, name, status from project
+                            where status = '%(status)s'
+                            and id in (select pid from tag where tag in (%(tags)s))
+                        """ % {"status":status, "tags":",".join(tags)})
     else:
-        c.execute("select id, name from project order by name")
+        for status in statuslist:
+            query.append("""select id, name, status from project where status = '%(status)s'
+                        """ % {"status":status})
+    c.execute(" union all ".join(query))
     return c
-
 
 def close_connection():
     c.close()
@@ -70,6 +76,24 @@ def get_dependencies(pid):
         dependencies += "P" + str(row[0]) + "T" + str(row[1]) + "; "
     return dependencies
 
+def get_childs(tid):
+    childs = []
+    c.execute("select childid from taskdependency where parentid = " + str(tid))
+    for row in c:
+        childs.append(row[0])
+    return childs
+
+def get_task_status(tid):
+    c.execute("select status from task where id = " + str(tid))
+    row = c.fetchone()
+    return row[0]
+
+def get_status_all_parents(tid):
+    parents = []
+    c.execute("select parentid from taskdependency where childid = " + str(tid))
+    for row in c:
+        parents.append(row[0])
+    return parents
 
 def get_actionlist(tid):
     cur = conn.cursor()
