@@ -353,6 +353,8 @@ class MyDotWindow(xdot.DotWindow):
     def on_url_clicked(self, widget, url, event):
         if self.selectparent and self.tid is not None:
             DBConnection.toggle_dependency(get_task_id(url), self.tid)
+            self.check_dependency(get_task_id(url))
+            self.check_dependency(self.tid)
             self.selectparent = False
             self.refresh_view()
         elif self.selectchild and self.tid is not None:
