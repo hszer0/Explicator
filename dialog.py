@@ -38,7 +38,7 @@ def get_active_text(combobox):
     return model[active][0]
 
 
-def show_task_dialog(pid, tid = None):
+def show_task_dialog(pid, tid=None):
     taskdialog = gtk.Dialog(title="Task", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
         buttons=(gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
 
@@ -98,9 +98,9 @@ def show_task_dialog(pid, tid = None):
             taskdialog.destroy()
         else:
             DBConnection.update_table("task", "name = '%(name)s', status = '%(status)s', duedate = '%(duedate)s'" %
-                {"name": taskdialog.TaskNameEntry.get_text().replace("'", "''"),
-                "status": get_active_text(taskdialog.TaskStatusCombo),
-                "duedate": taskdialog.TaskDateEntry.get_text()}, tid)
+                                              {"name": taskdialog.TaskNameEntry.get_text().replace("'", "''"),
+                                               "status": get_active_text(taskdialog.TaskStatusCombo),
+                                               "duedate": taskdialog.TaskDateEntry.get_text()}, tid)
             taskdialog.destroy()
         return True
 
@@ -152,7 +152,6 @@ def show_project_dialog(pid=None):
     projectdialog.vbox.pack_start(projectdialog.ProjectTagEntry, False)
     projectdialog.set_default_response(gtk.RESPONSE_ACCEPT)
 
-
     if pid is not None:
         projectdata = DBConnection.get_data("project", pid)
         projectdialog.ProjectNameEntry.set_text(projectdata[1])
@@ -174,16 +173,18 @@ def show_project_dialog(pid=None):
                 pid = DBConnection.add_project(projectdialog.ProjectNameEntry.get_text(),
                     get_active_text(projectdialog.ProjectStatusCombo), projectdialog.ProjectPriorityEntry.get_text())
             else:
-                DBConnection.update_table("project", "name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {
-                    "name": projectdialog.ProjectNameEntry.get_text().replace("'", "''"),
-                    "status": get_active_text(projectdialog.ProjectStatusCombo),
-                    "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
-            DBConnection.set_tags(pid, projectdialog.ProjectTagEntry.get_text().replace(", ",","))
+                DBConnection.update_table("project",
+                    "name = '%(name)s', status = '%(status)s', priority = %(priority)s" % {
+                        "name": projectdialog.ProjectNameEntry.get_text().replace("'", "''"),
+                        "status": get_active_text(projectdialog.ProjectStatusCombo),
+                        "priority": projectdialog.ProjectPriorityEntry.get_text()}, pid)
+            DBConnection.set_tags(pid, projectdialog.ProjectTagEntry.get_text().replace(", ", ","))
             projectdialog.destroy()
         return True
     else:
         projectdialog.destroy()
         return False
+
 
 def show_action_dialog(tid, aid=None):
     actiondialog = gtk.Dialog(title="Action", flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -204,11 +205,11 @@ def show_action_dialog(tid, aid=None):
     actiondialog.actionentry = gtk.Entry(max=50)
     actiondialog.actionentry.set_activates_default(True)
     actiondialog.vbox.pack_start(actiondialog.actionentry, False)
-#    label = gtk.Label("Warning Date")
-#    label.set_alignment(0.0, 0.0)
-#    actiondialog.vbox.pack_start(label, False)
-#    actiondialog.warningentry = gtk.Entry(max=50)
-#    actiondialog.vbox.pack_start(actiondialog.warningentry, False)
+    #    label = gtk.Label("Warning Date")
+    #    label.set_alignment(0.0, 0.0)
+    #    actiondialog.vbox.pack_start(label, False)
+    #    actiondialog.warningentry = gtk.Entry(max=50)
+    #    actiondialog.vbox.pack_start(actiondialog.warningentry, False)
     actiondialog.set_position(gtk.WIN_POS_CENTER_ALWAYS)
     actiondialog.set_default_response(gtk.RESPONSE_ACCEPT)
 
@@ -232,7 +233,6 @@ def show_action_dialog(tid, aid=None):
     else:
         actiondialog.destroy()
         return False
-
 
 
 def show_confirm_dialog(message):

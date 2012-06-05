@@ -23,6 +23,7 @@ from globals import *
 import gtk
 import xdot
 
+# get_active_text returns the text currently selected in the given combobox.
 def get_active_text(combobox):
     model = combobox.get_model()
     active = combobox.get_active()
@@ -51,6 +52,7 @@ class MyDotWindow(xdot.DotWindow):
         window.set_position(gtk.WIN_POS_CENTER)
         DBConnection.open_connection()
 
+        # Global variables needed for interface.
         self.pid = None
         self.tid = None
         self.aid = None
@@ -58,7 +60,7 @@ class MyDotWindow(xdot.DotWindow):
         self.selectchild = False
         self.tooltips = gtk.Tooltips()
 
-        #Treeview with Tags
+        # Treeview containing all tags.
         self.taglist = gtk.ListStore(str)
         self.tagtree = gtk.TreeView(self.taglist)
         tagselection = self.tagtree.get_selection()
@@ -69,7 +71,7 @@ class MyDotWindow(xdot.DotWindow):
         self.tagtree.append_column(gtk.TreeViewColumn("", gtk.CellRendererText(), text=0))
         self.tagtree.set_headers_visible(False)
 
-        #Treeview with Projects
+        # Treeview containing projects.
         self.projectlist = gtk.ListStore(int, str, str)
         self.projecttree = gtk.TreeView(self.projectlist)
         self.projecttree.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
@@ -79,7 +81,23 @@ class MyDotWindow(xdot.DotWindow):
         self.projecttree.get_selection().connect('changed', lambda s: self.on_projecttreeview_selection_changed(s))
         self.projecttree.set_headers_visible(False)
 
-        #projectproperties
+        # Treeview containing actions
+        self.actionlist = gtk.ListStore(int, str, int, bool)
+        self.actiontree = gtk.TreeView(self.actionlist)
+        self.actiontree.get_selection().connect('changed', lambda s: self.on_actiontreeview_selection_changed(s))
+        actionselection = self.tagtree.get_selection()
+        actionselection.set_mode(gtk.SELECTION_MULTIPLE)
+        self.checkbox = gtk.CellRendererToggle()
+        self.checkbox.set_property('activatable', True)
+        self.column1 = gtk.TreeViewColumn("Completed", self.checkbox)
+        self.column1.add_attribute(self.checkbox, "active", 3)
+        self.column1.set_max_width(100)
+        self.checkbox.connect('toggled', self.on_action_toggled, self.actionlist)
+        self.actiontree.append_column(self.column1)
+        self.actiontree.append_column(gtk.TreeViewColumn("Action", gtk.CellRendererText(), text=1))
+        self.actiontree.set_headers_visible(False)
+
+        # Code to visualise the properties of a project.
         self.projectproperties = gtk.VBox()
         self.projectproperties.set_size_request(175, 155)
         label = gtk.Label()
@@ -115,7 +133,7 @@ class MyDotWindow(xdot.DotWindow):
         hbox.pack_start(vbox)
         self.projectproperties.pack_start(hbox, False, padding=5)
 
-        #TaskProperties
+        # Code to visualise the properties of a task.
         self.TaskProperties = gtk.VBox()
         self.TaskProperties.set_size_request(200, 155)
         header = gtk.HBox()
@@ -182,27 +200,9 @@ class MyDotWindow(xdot.DotWindow):
         hbox.pack_start(btntogglechild)
         self.TaskProperties.pack_start(hbox)
 
-
-        #Treeview actions
-        self.actionlist = gtk.ListStore(int, str, int, bool)
-        self.actiontree = gtk.TreeView(self.actionlist)
-        self.actiontree.get_selection().connect('changed', lambda s: self.on_actiontreeview_selection_changed(s))
-        actionselection = self.tagtree.get_selection()
-        actionselection.set_mode(gtk.SELECTION_MULTIPLE)
-        self.checkbox = gtk.CellRendererToggle()
-        self.checkbox.set_property('activatable', True)
-        self.column1 = gtk.TreeViewColumn("Completed", self.checkbox)
-        self.column1.add_attribute(self.checkbox, "active", 3)
-        self.column1.set_max_width(100)
-        self.checkbox.connect('toggled', self.on_action_toggled, self.actionlist)
-        self.actiontree.append_column(self.column1)
-        self.actiontree.append_column(gtk.TreeViewColumn("Action", gtk.CellRendererText(), text=1))
-        self.actiontree.set_headers_visible(False)
-
-        #Action box
+        # Code to visualise all actions belonging to a task.
         self.actions = gtk.VBox()
         self.actions.set_size_request(400, 155)
-
         header = gtk.HBox()
         label = gtk.Label()
         label.set_alignment(0, 0)
@@ -318,11 +318,9 @@ class MyDotWindow(xdot.DotWindow):
         scroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
         scroller.add(self.projecttree)
         self.navbox.pack_start(scroller)
-
         hbox.pack_start(self.navbox, False)
         vseparator = gtk.VSeparator()
         hbox.pack_start(vseparator, False)
-
         vbox = gtk.VBox()
         hbox.pack_start(vbox)
 
@@ -351,6 +349,7 @@ class MyDotWindow(xdot.DotWindow):
         self.widget.connect('clicked', self.on_url_clicked)
         self.show_all()
 
+    # Check if the given task is dependent on other tasks.
     def check_dependency(self, tid):
         if DBConnection.get_task_status(tid) == hold:
             set_released = True
@@ -358,14 +357,14 @@ class MyDotWindow(xdot.DotWindow):
                 if DBConnection.get_task_status(status) != done:
                     set_released = False
             if set_released:
-                DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, tid)
+                DBConnection.update_table("task", "status = '%(status)s'" % {"status": released}, tid)
         elif DBConnection.get_task_status(tid) == released:
             set_released = True
             for status in DBConnection.get_status_all_parents(tid):
                 if DBConnection.get_task_status(status) != done:
                     set_released = False
             if not set_released:
-                DBConnection.update_table("task", "status = '%(status)s'" % {"status":hold}, tid)
+                DBConnection.update_table("task", "status = '%(status)s'" % {"status": hold}, tid)
         self.cascade(tid)
 
     def on_url_clicked(self, widget, url, event):
@@ -436,10 +435,10 @@ class MyDotWindow(xdot.DotWindow):
             if not row[3]:
                 completed_all = False
         if completed_all:
-            DBConnection.update_table("task", "status = '%(status)s'" % {"status":done}, self.tid)
+            DBConnection.update_table("task", "status = '%(status)s'" % {"status": done}, self.tid)
             self.check_dependency(self.tid)
         elif initial_status == done:
-            DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, self.tid)
+            DBConnection.update_table("task", "status = '%(status)s'" % {"status": released}, self.tid)
             self.check_dependency(self.tid)
         self.refresh_actionlist()
         self.refresh_view()
@@ -481,7 +480,8 @@ class MyDotWindow(xdot.DotWindow):
 
     def refresh_graph(self, dotcode):
         window.set_dotcode(dotcode)
-        print dotcode
+        # uncomment this to view the dotcode used to draw the graph.
+        #print dotcode
 
     def on_status_change_task(self, combobox):
         if self.tid is not None:
@@ -523,24 +523,21 @@ class MyDotWindow(xdot.DotWindow):
             self.clear_task_properties()
 
     def edit_project(self, widget):
-        if self.pid is not None:
-            if dialog.show_project_dialog(self.pid):
-                selection = self.tagtree.get_selection()
-                self.refresh_tags()
-                self.on_tagtreeview_selection_changed(selection)
+        if self.pid is not None and dialog.show_project_dialog(self.pid):
+            selection = self.tagtree.get_selection()
+            self.refresh_tags()
+            self.on_tagtreeview_selection_changed(selection)
 
     def add_task(self, widget):
-        if self.pid is not None:
-            if dialog.show_task_dialog(self.pid):
-                self.refresh_view(False)
-                self.clear_task_properties()
+        if self.pid is not None and dialog.show_task_dialog(self.pid):
+            self.refresh_view(False)
+            self.clear_task_properties()
 
     def edit_task(self, widget):
-        if self.pid is not None and self.tid is not None:
-            if dialog.show_task_dialog(self.pid, self.tid):
-                self.cascade(self.tid)
-                self.cascade(self.tid)
-                self.refresh_view()
+        if self.pid is not None and self.tid is not None and dialog.show_task_dialog(self.pid, self.tid):
+            self.cascade(self.tid)
+            self.cascade(self.tid)
+            self.refresh_view()
 
     def remove_task(self, widget):
         taskdata = DBConnection.get_data("task", self.tid)
@@ -568,16 +565,14 @@ class MyDotWindow(xdot.DotWindow):
                 self.clear_task_properties()
 
     def add_action(self, widget):
-        if self.tid is not None:
-            if dialog.show_action_dialog(self.tid):
-                self.refresh_actionlist()
-                self.refresh_view()
+        if self.tid is not None and dialog.show_action_dialog(self.tid):
+            self.refresh_actionlist()
+            self.refresh_view()
 
     def edit_action(self, widget):
-        if self.tid is not None:
-            if dialog.show_action_dialog(self.tid, self.aid):
-                self.refresh_actionlist()
-                self.refresh_view()
+        if self.tid is not None and dialog.show_action_dialog(self.tid, self.aid):
+            self.refresh_actionlist()
+            self.refresh_view()
 
     def remove_action(self, widget):
         if self.aid is not None:
@@ -586,23 +581,21 @@ class MyDotWindow(xdot.DotWindow):
             self.refresh_view()
 
     def toggle_parent_selection(self, widget):
+        self.selectchild = False
         if not self.selectparent:
             self.selectparent = True
-            self.selectchild = False
             self.set_interface_lock(True)
         else:
             self.selectparent = False
-            self.selectchild = False
             self.set_interface_lock(False)
 
 
     def toggle_child_selection(self, widget):
+        self.selectparent = False
         if not self.selectchild:
-            self.selectparent = False
             self.selectchild = True
             self.set_interface_lock(True)
         else:
-            self.selectparent = False
             self.selectchild = False
             self.set_interface_lock(False)
 
@@ -631,7 +624,7 @@ class MyDotWindow(xdot.DotWindow):
             DBConnection.add_task(self.pid, actiondata[1], "available", "1901-01-01")
             self.remove_action(widget)
 
-    def cascade(self, tid, trace = None):
+    def cascade(self, tid, trace=None):
         if trace is None:
             trace = []
         if tid not in trace:
@@ -639,16 +632,16 @@ class MyDotWindow(xdot.DotWindow):
             for child in DBConnection.get_childs(tid):
                 parent_status = DBConnection.get_task_status(tid)
                 child_status = DBConnection.get_task_status(child)
-                if child_status == hold and parent_status == release_trigger :
+                if child_status == hold and parent_status == release_trigger:
                     valid_update = True
                     for status in DBConnection.get_status_all_parents(child):
                         if DBConnection.get_task_status(status) != done:
                             valid_update = False
                     if valid_update:
-                        DBConnection.update_table("task", "status = '%(status)s'" % {"status":released}, child)
+                        DBConnection.update_table("task", "status = '%(status)s'" % {"status": released}, child)
                         self.cascade(child, trace)
-                elif child_status not in (ignore, done) and parent_status != release_trigger :
-                    DBConnection.update_table("task", "status = '%(status)s'" % {"status":hold}, child)
+                elif child_status not in (ignore, done) and parent_status != release_trigger:
+                    DBConnection.update_table("task", "status = '%(status)s'" % {"status": hold}, child)
                     self.cascade(child, trace)
 
 if __name__ == "__main__":

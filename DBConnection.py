@@ -43,12 +43,12 @@ def open_connection():
     c.execute("PRAGMA foreign_keys = ON;")
 
 
-def get_tags(pid = None):
+def get_tags(pid=None):
     tg = conn.cursor()
     if pid is None:
         tg.execute("select distinct tag from tag order by tag")
     else:
-        tg.execute("select distinct tag from tag where pid = %(pid)s order by tag" % {"pid":pid})
+        tg.execute("select distinct tag from tag where pid = %(pid)s order by tag" % {"pid": pid})
     return tg
 
 
@@ -62,13 +62,14 @@ def get_projects(taglist):
             query.append("""select id, name, status from project
                             where status = '%(status)s'
                             and id in (select pid from tag where tag in (%(tags)s))
-                        """ % {"status":status, "tags":",".join(tags)})
+                        """ % {"status": status, "tags": ",".join(tags)})
     else:
         for status in statuslist:
             query.append("""select id, name, status from project where status = '%(status)s'
-                        """ % {"status":status})
+                        """ % {"status": status})
     c.execute(" union all ".join(query))
     return c
+
 
 def close_connection():
     c.close()
@@ -93,6 +94,7 @@ def get_dependencies(pid):
         dependencies += "P" + str(row[0]) + "T" + str(row[1]) + "; "
     return dependencies
 
+
 def get_childs(tid):
     childs = []
     c.execute("select childid from taskdependency where parentid = " + str(tid))
@@ -100,10 +102,12 @@ def get_childs(tid):
         childs.append(row[0])
     return childs
 
+
 def get_task_status(tid):
     c.execute("select status from task where id = " + str(tid))
     row = c.fetchone()
     return row[0]
+
 
 def get_status_all_parents(tid):
     parents = []
@@ -111,6 +115,7 @@ def get_status_all_parents(tid):
     for row in c:
         parents.append(row[0])
     return parents
+
 
 def get_actionlist(tid):
     cur = conn.cursor()
@@ -154,7 +159,7 @@ def generate_dotcode(projectlist=None):
         """
     projects = []
     for project in projectlist:
-        projects.append(str(project).replace('"',r'\"'))
+        projects.append(str(project).replace('"', r'\"'))
 
     c.execute("select * from task where pid in (%(projects)s)" % {"projects": ",".join(projects)})
     for row in c:
@@ -165,7 +170,8 @@ def generate_dotcode(projectlist=None):
             color = %(color)s
             fontcolor = %(color)s
         ]
-        """ % {"tasks": get_actions(row[0]).replace('"',r'\"'), "name": row[1].replace('"',r'\"'), "status": row[3], "due": row[4],
+        """ % {"tasks": get_actions(row[0]).replace('"', r'\"'), "name": row[1].replace('"', r'\"'), "status": row[3],
+               "due": row[4],
                "pid_tid": "P" + str(row[2]) + "T" + str(row[0]), "color": get_color_from_status(row[3])}
 
     for pid in projectlist:
@@ -239,17 +245,22 @@ def add_action(name, tid, completed, warningdate):
 def remove_action(aid):
     c.execute("delete from action where id = %(aid)s" % {"aid": aid})
 
+
 def toggle_dependency(parent, child):
-    c.execute("select * from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent":parent, "child":child})
+    c.execute("select * from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent": parent,
+                                                                                                    "child": child})
     i = 0
     for row in c:
         i += 1
     if i == 0:
-        c.execute("insert into taskdependency (parentid, childid) values (%(parent)s, %(child)s)" % {"parent":parent, "child":child})
+        c.execute("insert into taskdependency (parentid, childid) values (%(parent)s, %(child)s)" % {"parent": parent,
+                                                                                                     "child": child})
     else:
-        c.execute("delete from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent":parent, "child":child})
+        c.execute("delete from taskdependency where parentid = %(parent)s and childid = %(child)s" % {"parent": parent,
+                                                                                                      "child": child})
+
 
 def set_tags(pid, tags):
-    c.execute("delete from tag where pid = %(pid)s" % {"pid":pid})
+    c.execute("delete from tag where pid = %(pid)s" % {"pid": pid})
     for tag in tags.split(","):
-        c.execute("insert into tag (pid, tag) values (%(pid)s, '%(tag)s')" % {"pid":pid, "tag":tag})
+        c.execute("insert into tag (pid, tag) values (%(pid)s, '%(tag)s')" % {"pid": pid, "tag": tag})
