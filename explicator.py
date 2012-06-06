@@ -119,7 +119,7 @@ class MyDotWindow(xdot.DotWindow):
         self.ProjectStatusCombo = gtk.combo_box_new_text()
         for status in statuslist:
             self.ProjectStatusCombo.append_text(status)
-        self.ProjectStatusCombo.connect('changed', self.on_status_change_project)
+        self.handlerid = self.ProjectStatusCombo.connect('changed', self.on_status_change_project)
         vbox.pack_start(self.ProjectStatusCombo)
         self.ProjectPriorityEntry = gtk.Entry(max=3)
         self.ProjectPriorityEntry.set_sensitive(False)
@@ -349,7 +349,7 @@ class MyDotWindow(xdot.DotWindow):
         self.widget.connect('clicked', self.on_url_clicked)
         self.show_all()
 
-    # Check if the given task is dependent on other tasks.
+    # Check if the given task is dependent on other tasks and if other task are dependent on this task.
     def check_dependency(self, tid):
         if DBConnection.get_task_status(tid) == hold:
             set_released = True
@@ -367,6 +367,7 @@ class MyDotWindow(xdot.DotWindow):
                 DBConnection.update_table("task", "status = '%(status)s'" % {"status": hold}, tid)
         self.cascade(tid)
 
+    # Clicking on a node will fill out all the details in the Project and Task box.
     def on_url_clicked(self, widget, url, event):
         if self.selectparent and self.tid is not None:
             DBConnection.toggle_dependency(get_task_id(url), self.tid)
@@ -498,6 +499,9 @@ class MyDotWindow(xdot.DotWindow):
             if taskdata[2] != get_active_text(combobox):
                 DBConnection.update_table("project", "status = '%(status)s'" %
                                                      {"status": get_active_text(combobox)}, self.pid)
+        self.ProjectStatusCombo.handler_block(self.handlerid)
+        self.refresh_projects(self.get_selection_strings(self.tagtree.get_selection()))   
+        self.ProjectStatusCombo.handler_unblock(self.handlerid)
 
 
     def clear_project_properties(self):
