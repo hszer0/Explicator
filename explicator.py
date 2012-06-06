@@ -17,6 +17,8 @@
 #You should have received a copy of the GNU General Public License
 #along with Explicator.  If not, see <http://www.gnu.org/licenses/>.
 
+#testing
+
 import DBConnection
 import dialog
 from globals import *
@@ -647,6 +649,7 @@ class MyDotWindow(xdot.DotWindow):
                 elif child_status not in (ignore, done) and parent_status != release_trigger:
                     DBConnection.update_table("task", "status = '%(status)s'" % {"status": hold}, child)
                     self.cascade(child, trace)
+
 
 if __name__ == "__main__":
     window = MyDotWindow()
