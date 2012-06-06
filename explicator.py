@@ -17,8 +17,6 @@
 #You should have received a copy of the GNU General Public License
 #along with Explicator.  If not, see <http://www.gnu.org/licenses/>.
 
-#testing
-
 import DBConnection
 import dialog
 from globals import *
